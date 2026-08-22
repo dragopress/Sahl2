@@ -1,0 +1,14 @@
+{
+  "product": "SahlBiz Business OS",
+  "version": "0.2.0-rc.1",
+  "generatedAt": "2026-08-19T19:05:18.036Z",
+  "files": {
+    "package.json": "9cbad1f71c78347899722e1bbef946f8b3ab87a499a973003f1d447366624adb",
+    "docker-compose.production.yml": "f491b5fd82f0f188cd5b1d1de6a7cbd9a027e7f10a1bcd75b90baa0b84a1823e",
+    ".env.production.example": "2a5a04556f1750e337c9c23703466bfbae2b52e6fa9fd88a67291bc89ec5e4ee",
+    "infra/api/Dockerfile": "ff8b98ffad78b9ff20a475be5892cb2f52fd728d04f5592cea71132cb0750427",
+    "infra/api/entrypoint.sh": "407d4ddf793d2082fba9dc97e0dd214f9f2d3822a7b4614894603b684c2af1c8",
+    "infra/web/Dockerfile": "3afcc0edd1937864b2fe8647ae75da212eb28087587c65c95c74a0dc91d14a9c",
+    "infra/worker/Dockerfile": "069e2db705a4cc8f8f73cc8ef66afc1841ddc52f7a310541d89203d1d759ed9d"
+  }
+}

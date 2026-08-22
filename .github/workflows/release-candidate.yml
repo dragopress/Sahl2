@@ -1,0 +1,85 @@
+name: SahlBiz Release Candidate
+
+on:
+  push:
+    tags:
+      - 'v*-rc.*'
+  workflow_dispatch:
+
+concurrency:
+  group: sahlbiz-release-candidate
+  cancel-in-progress: false
+
+jobs:
+  release-candidate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: sahlbiz
+          POSTGRES_USER: sahlbiz
+          POSTGRES_PASSWORD: sahlbiz
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sahlbiz -d sahlbiz"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+      CORS_ORIGINS: http://localhost:3000
+      TRUST_PROXY: 'false'
+      PORT: '3001'
+      E2E_BASE_URL: http://127.0.0.1:3001/api/v1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate repository
+        run: npm run validate
+      - name: Release candidate checks
+        run: npm run release:check
+      - name: Generate Prisma client
+        run: npm run db:generate
+      - name: Apply migrations
+        run: npm run db:migrate -- --deploy
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Build applications
+        run: npm run build
+      - name: Build production Docker images
+        run: |
+          docker build -f infra/api/Dockerfile -t sahlbiz/api:${GITHUB_REF_NAME} .
+          docker build -f infra/web/Dockerfile -t sahlbiz/web:${GITHUB_REF_NAME} .
+          docker build -f infra/worker/Dockerfile -t sahlbiz/worker:${GITHUB_REF_NAME} .
+      - name: Validate production Compose
+        run: docker compose -f docker-compose.production.yml config
+      - name: Start API smoke test
+        run: |
+          npm run start -w @sahlbiz/api > /tmp/sahlbiz-api.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3001/api/v1/health/live; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/sahlbiz-api.log
+          exit 1
+      - name: Release manifest
+        run: npm run release:manifest
+      - name: Upload release manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: sahlbiz-release-manifest
+          path: release/manifest.json

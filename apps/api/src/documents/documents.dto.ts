@@ -1,0 +1,5 @@
+import {IsArray,IsDateString,IsEnum,IsIn,IsInt,IsOptional,IsString,MaxLength,Min} from 'class-validator';
+import {DocumentCategory,DocumentVisibility} from '@prisma/client';
+export class ListDocumentsDto { @IsOptional() @IsString() @MaxLength(100) search?:string; @IsOptional() @IsEnum(DocumentCategory) category?:DocumentCategory; @IsOptional() @IsString() entityType?:string; @IsOptional() @IsString() entityId?:string; @IsOptional() @IsInt() @Min(1) page?:number; @IsOptional() @IsInt() @Min(1) pageSize?:number; }
+export class CreateDocumentDto { @IsEnum(DocumentCategory) category!:DocumentCategory; @IsOptional() @IsEnum(DocumentVisibility) visibility?:DocumentVisibility; @IsOptional() @IsString() @MaxLength(120) entityType?:string; @IsOptional() @IsString() @MaxLength(100) entityId?:string; @IsOptional() @IsDateString() expiresAt?:string; @IsOptional() @IsArray() @IsString({each:true}) tags?:string[]; @IsOptional() @IsArray() @IsString({each:true}) userIds?:string[]; }
+export class CreateTagDto { @IsString() @MaxLength(60) name!:string; }

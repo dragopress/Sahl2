@@ -1,0 +1,5 @@
+import {Type} from 'class-transformer';
+import {IsBoolean,IsNumber,IsOptional,IsString,Max,Min} from 'class-validator';
+export class CreateCategoryDto { @IsString() name!: string; }
+export class CreateProductDto { @IsString() name!: string; @IsString() @IsOptional() sku?: string; @IsString() @IsOptional() barcode?: string; @IsString() @IsOptional() description?: string; @IsString() @IsOptional() categoryId?: string; @IsString() @IsOptional() type?: 'PRODUCT'|'SERVICE'; @Type(()=>Number) @IsNumber({maxDecimalPlaces:2}) @Min(0) @IsOptional() purchasePrice?: number; @Type(()=>Number) @IsNumber({maxDecimalPlaces:2}) @Min(0) @IsOptional() sellingPrice?: number; @Type(()=>Number) @IsNumber({maxDecimalPlaces:2}) @Min(0) @Max(100) @IsOptional() taxRate?: number; @IsString() @IsOptional() unit?: string; @Type(()=>Number) @IsNumber({maxDecimalPlaces:3}) @Min(0) @IsOptional() stock?: number; @Type(()=>Number) @IsNumber({maxDecimalPlaces:3}) @Min(0) @IsOptional() minimumStock?: number; @IsString() @IsOptional() supplier?: string; @IsBoolean() @IsOptional() active?: boolean; }
+export class UpdateProductDto extends CreateProductDto {}

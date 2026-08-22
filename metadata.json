@@ -1,0 +1,6 @@
+{
+  "name": "SahlBiz",
+  "description": "Business OS for Moroccan SMEs - sales, invoicing, accounting, inventory, cashflow, and project management",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

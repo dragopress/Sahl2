@@ -1,0 +1,29 @@
+{
+  "name": "sahlbiz",
+  "private": true,
+  "version": "0.2.0-rc.1",
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev -w @sahlbiz/web",
+    "build": "npm run build -w @sahlbiz/web",
+    "lint": "npm run lint -w @sahlbiz/web",
+    "db:generate": "npm run prisma:generate -w @sahlbiz/database",
+    "db:migrate": "npm run prisma:migrate -w @sahlbiz/database",
+    "db:seed": "npm run prisma:seed -w @sahlbiz/database",
+    "test": "npm run test -w @sahlbiz/api",
+    "typecheck": "npm run typecheck -w @sahlbiz/web",
+    "validate": "node scripts/validate-repo.mjs",
+    "ci": "npm run validate && npm run typecheck && npm run build",
+    "e2e": "npm run e2e -w @sahlbiz/api",
+    "ops:backup": "./scripts/backup-postgres.sh",
+    "ops:restore": "./scripts/restore-postgres.sh",
+    "release:check": "node scripts/release-check.mjs",
+    "release:manifest": "node scripts/create-release-manifest.mjs",
+    "ops:backup-objects": "sh scripts/backup-object-storage.sh",
+    "ops:restore-objects": "sh scripts/restore-object-storage.sh"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "postcss": "^8.5.26"
+  }
+}

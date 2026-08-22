@@ -1,0 +1,10 @@
+import {Body,Controller,Get,Param,Patch,Post,Query,Req,UseGuards} from '@nestjs/common'; import {AuthGuard} from '../common/auth.guard'; import {TenantContextGuard} from '../common/tenant-context.guard'; import {Tenant} from '../common/tenant.decorator'; import {RequirePermission,RbacGuard} from '../common/rbac'; import {CreateCategoryDto,CreateProductDto,UpdateProductDto} from './products.dto'; import {ProductsService} from './products.service';
+@Controller('products') @UseGuards(AuthGuard,TenantContextGuard,RbacGuard) export class ProductsController { constructor(private readonly service:ProductsService){}
+@Get('categories') @RequirePermission('products:read') categories(@Tenant() m:any){return this.service.categories(m.organizationId)}
+@Post('categories') @RequirePermission('products:write') createCategory(@Tenant() m:any,@Body() dto:CreateCategoryDto,@Req() req:any){return this.service.createCategory(m.organizationId,req.auth.userId,dto,req)}
+@Get('low-stock') @RequirePermission('products:read') lowStock(@Tenant() m:any){return this.service.lowStock(m.organizationId)}
+@Get() @RequirePermission('products:read') list(@Tenant() m:any,@Query('search') search?:string,@Query('type') type?:string,@Query('active') active?:string){return this.service.list(m.organizationId,search,type,active)}
+@Get(':id') @RequirePermission('products:read') get(@Tenant() m:any,@Param('id') id:string){return this.service.get(m.organizationId,id)}
+@Post() @RequirePermission('products:write') create(@Tenant() m:any,@Body() dto:CreateProductDto,@Req() req:any){return this.service.create(m.organizationId,req.auth.userId,dto,req)}
+@Patch(':id') @RequirePermission('products:write') update(@Tenant() m:any,@Param('id') id:string,@Body() dto:UpdateProductDto,@Req() req:any){return this.service.update(m.organizationId,req.auth.userId,id,dto,req)}
+@Post(':id/archive') @RequirePermission('products:write') archive(@Tenant() m:any,@Param('id') id:string,@Req() req:any){return this.service.archive(m.organizationId,req.auth.userId,id,req)} }

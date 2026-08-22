@@ -1,0 +1,4 @@
+'use client';
+import {useEffect,useState} from 'react';
+const API=process.env.NEXT_PUBLIC_API_URL||'/api/v1';
+export default function OrgSwitcher(){const [orgs,setOrgs]=useState<any[]>([]);const [value,setValue]=useState('');useEffect(()=>{fetch(`${API}/auth/me`,{credentials:'include'}).then(r=>r.json()).then(d=>{const x=d.organizations||[];setOrgs(x);const saved=localStorage.getItem('sahlbiz_org');setValue(x.some((o:any)=>o.organizationId===saved)?saved:x[0]?.organizationId||'')}).catch(()=>{})},[]);function change(v:string){setValue(v);localStorage.setItem('sahlbiz_org',v);window.dispatchEvent(new Event('sahlbiz-org-change'));}return <select aria-label="Organisation" value={value} onChange={e=>change(e.target.value)} className="max-w-48 border border-gray-200 rounded-lg bg-gray-50 px-2 py-1.5 text-xs">{orgs.map((o:any)=><option key={o.organizationId} value={o.organizationId}>{o.organization.name}</option>)}</select>}
