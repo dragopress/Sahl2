@@ -6,7 +6,9 @@ import {AuditService} from './common/audit.service';
 import {RbacGuard} from './common/rbac';
 import {DashboardController} from './dashboard/dashboard.controller';
 import {CustomersController} from './customers/customers.controller';
+import {Customer360Controller} from './customers/customer-360.controller';
 import {CustomerService} from './customers/customer.service';
+import {Customer360Service} from './customers/customer-360.service';
 import {AuthModule} from './auth/auth.module';
 import {SalesController} from './sales/sales.controller';
 import {SalesService} from './sales/sales.service';
@@ -24,4 +26,4 @@ import {AiModule} from './ai/ai.module';
 import {RateLimitGuard} from './common/rate-limit.guard';
 import {CsrfGuard} from './common/csrf.guard';
 import {SearchModule} from './search/search.module';
-@Module({imports:[AuthModule,FinanceModule,SuppliersModule,ExpensesModule,ProjectsModule,AnalyticsModule,AutomationModule,DocumentsModule,SearchModule,AiModule],controllers:[HealthController,DashboardController,CustomersController,SalesController,ProductsController,InventoryController],providers:[PrismaService,AuditService,CustomerService,SalesService,ProductsService,InventoryService,Reflector,RbacGuard,{provide:APP_GUARD,useClass:RateLimitGuard},{provide:APP_GUARD,useClass:CsrfGuard}]}) export class AppModule{}
+@Module({imports:[AuthModule,FinanceModule,SuppliersModule,ExpensesModule,ProjectsModule,AnalyticsModule,AutomationModule,DocumentsModule,SearchModule,AiModule],controllers:[HealthController,DashboardController,CustomersController,Customer360Controller,SalesController,ProductsController,InventoryController],providers:[PrismaService,AuditService,CustomerService,Customer360Service,SalesService,ProductsService,InventoryService,Reflector,RbacGuard,{provide:APP_GUARD,useClass:RateLimitGuard},{provide:APP_GUARD,useClass:CsrfGuard}]}) export class AppModule{}
