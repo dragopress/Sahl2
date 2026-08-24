@@ -1,0 +1,24 @@
+{
+  "region": "eu-central-1",
+  "apps": {
+    "api": {
+      "name": "api",
+      "root": "apps/api",
+      "framework": "nestjs",
+      "httpPort": 3000,
+      "build": {
+        "command": "bun run build",
+        "outputDirectory": "dist"
+      }
+    },
+    "web": {
+      "name": "web",
+      "root": "apps/web",
+      "framework": "nextjs",
+      "httpPort": 3000,
+      "build": {
+        "command": "bun run build"
+      }
+    }
+  }
+}
