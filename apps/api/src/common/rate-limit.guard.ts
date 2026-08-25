@@ -1,4 +1,4 @@
-import {CanActivate,ExecutionContext,Injectable,TooManyRequestsException} from '@nestjs/common';
+import {CanActivate,ExecutionContext,HttpException,HttpStatus,Injectable} from '@nestjs/common';
 
 type Bucket={count:number;resetAt:number};
 
@@ -29,7 +29,7 @@ export class RateLimitGuard implements CanActivate{
     if(bucket.count>=max){
       const retryAfter=Math.max(1,Math.ceil((bucket.resetAt-now)/1000));
       req.res?.setHeader('Retry-After',String(retryAfter));
-      throw new TooManyRequestsException('Too many requests');
+      throw new HttpException('Too many requests',HttpStatus.TOO_MANY_REQUESTS);
     }
     bucket.count++;
     return true;
