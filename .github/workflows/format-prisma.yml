@@ -25,10 +25,13 @@ jobs:
       - name: Format Prisma schema
         run: npx prisma format --schema packages/database/prisma/schema.prisma
 
+      - name: Validate Prisma schema
+        run: npx prisma validate --schema packages/database/prisma/schema.prisma
+
       - name: Commit formatting changes
         run: |
           if git diff --quiet -- packages/database/prisma/schema.prisma; then
-            echo "Prisma schema is already formatted."
+            echo "Prisma schema is already formatted and valid."
             exit 0
           fi
 
