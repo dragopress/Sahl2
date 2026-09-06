@@ -2,7 +2,10 @@
   "name": "sahlbiz",
   "private": true,
   "version": "0.2.0-rc.1",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w @sahlbiz/web",
     "build": "npm run build -w @sahlbiz/web",
@@ -23,7 +26,9 @@
     "ops:restore-objects": "sh scripts/restore-object-storage.sh"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "pg": "^8.23.0",
     "postcss": "^8.5.26"
   }
 }
