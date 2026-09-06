@@ -33,7 +33,6 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       DIRECT_URL: ${{ secrets.DIRECT_URL }}
-      DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
       CORS_ORIGINS: http://localhost:3000
