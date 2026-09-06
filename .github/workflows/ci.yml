@@ -31,6 +31,8 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 20
 
     env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DIRECT_URL: ${{ secrets.DIRECT_URL }}  # Add this
       DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
@@ -46,7 +48,7 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Validate repository
         run: npm run validate
       - name: Generate Prisma client
