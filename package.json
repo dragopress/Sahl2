@@ -13,6 +13,7 @@
     "db:generate": "npm run prisma:generate -w @sahlbiz/database",
     "db:migrate": "npm run prisma:migrate -w @sahlbiz/database",
     "db:seed": "npm run prisma:seed -w @sahlbiz/database",
+    "db:migrate:deploy": "npm run prisma:migrate:deploy -w @sahlbiz/database",
     "test": "npm run test -w @sahlbiz/api",
     "typecheck": "npm run typecheck -w @sahlbiz/web",
     "validate": "node scripts/validate-repo.mjs",
