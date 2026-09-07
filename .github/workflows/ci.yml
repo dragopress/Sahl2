@@ -31,9 +31,8 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 20
 
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-  DIRECT_URL: ${{ secrets.DIRECT_URL }}  # Add this
-      DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+      DATABASE_URL: ${{ postgresql://postgres.qudizmxvcgltlhoyyghz:[MNAjR0ZKjdtkH4Z0]@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true }}
+      DIRECT_URL: ${{ postgresql://postgres.qudizmxvcgltlhoyyghz:[MNAjR0ZKjdtkH4Z0D]@aws-1-eu-west-1.pooler.supabase.com:5432/postgres }}
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
       CORS_ORIGINS: http://localhost:3000
