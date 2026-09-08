@@ -1,11 +1,22 @@
 -- Sales vertical slice: quote/invoice line items and tenant-safe numbering.
 CREATE TYPE "NumberSequenceType" AS ENUM ('QUOTE', 'INVOICE');
 
-ALTER TABLE "Quote" ADD COLUMN "discount" DECIMAL(14,2) NOT NULL DEFAULT 0;
-ALTER TABLE "Quote" ADD COLUMN "notes" TEXT;
-ALTER TABLE "Quote" ADD COLUMN "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-ALTER TABLE "Invoice" ADD COLUMN "discount" DECIMAL(14,2) NOT NULL DEFAULT 0;
-ALTER TABLE "Invoice" ADD COLUMN "notes" TEXT;
+-- Create Quote table if it doesn't exist
+CREATE TABLE IF NOT EXISTS "Quote" (
+  "id" TEXT NOT NULL,
+  "discount" DECIMAL(14,2) NOT NULL DEFAULT 0,
+  "notes" TEXT,
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "Quote_pkey" PRIMARY KEY ("id")
+);
+
+-- Create Invoice table if it doesn't exist
+CREATE TABLE IF NOT EXISTS "Invoice" (
+  "id" TEXT NOT NULL,
+  "discount" DECIMAL(14,2) NOT NULL DEFAULT 0,
+  "notes" TEXT,
+  CONSTRAINT "Invoice_pkey" PRIMARY KEY ("id")
+);
 
 CREATE TABLE "QuoteItem" (
   "id" TEXT NOT NULL,
