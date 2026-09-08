@@ -4,3 +4,9 @@ dist
 coverage
 !.env.example
 *.log
+
+# Local environment files
+packages/database/.env
+
+# TypeScript build cache
+*.tsbuildinfo
