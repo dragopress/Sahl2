@@ -31,5 +31,12 @@
     "@tailwindcss/postcss": "^4.3.3",
     "pg": "^8.23.0",
     "postcss": "^8.5.26"
+  },
+  "allowScripts": {
+    "prisma": true,
+    "msgpackr-extract": true,
+    "esbuild": true,
+    "@prisma/engines": true,
+    "@prisma/client": true
   }
 }
