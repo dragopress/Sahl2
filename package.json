@@ -27,7 +27,6 @@
     "ops:restore-objects": "sh scripts/restore-object-storage.sh"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.10.0",
     "@tailwindcss/postcss": "^4.3.3",
     "pg": "^8.23.0",
     "postcss": "^8.5.26"
