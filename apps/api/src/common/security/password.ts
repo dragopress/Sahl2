@@ -1,6 +1,5 @@
-// apps/api/src/common/security/password.ts
-import {randomBytes, scrypt as scryptCallback, timingSafeEqual, createHash} from 'node:crypto';
-import {promisify} from 'node:util';
+import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
 
 const scrypt = promisify(scryptCallback);
 const KEYLEN = 64;
@@ -13,11 +12,15 @@ export async function hashPassword(password: string) {
 
 export async function verifyPassword(password: string, encoded: string) {
   const [scheme, salt, hex] = encoded.split('$');
-  if (scheme !== 'scrypt' || !salt || !hex) return false;
+
+  if (scheme !== 'scrypt' || !salt || !hex) {
+    return false;
+  }
+
   const key = (await scrypt(password, salt, KEYLEN)) as Buffer;
+
   try {
-    timingSafeEqual(key, Buffer.from(hex, 'hex'));
-    return true;
+    return timingSafeEqual(key, Buffer.from(hex, 'hex'));
   } catch {
     return false;
   }
