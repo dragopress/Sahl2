@@ -2,7 +2,10 @@
   "name": "sahlbiz",
   "private": true,
   "version": "0.2.0-rc.1",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w @sahlbiz/web",
     "build": "npm run build -w @sahlbiz/web",
@@ -10,6 +13,7 @@
     "db:generate": "npm run prisma:generate -w @sahlbiz/database",
     "db:migrate": "npm run prisma:migrate -w @sahlbiz/database",
     "db:seed": "npm run prisma:seed -w @sahlbiz/database",
+    "db:migrate:deploy": "npm run prisma:migrate:deploy -w @sahlbiz/database",
     "test": "npm run test -w @sahlbiz/api",
     "typecheck": "npm run typecheck -w @sahlbiz/web",
     "validate": "node scripts/validate-repo.mjs",
@@ -24,6 +28,14 @@
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "pg": "^8.23.0",
     "postcss": "^8.5.26"
+  },
+  "allowScripts": {
+    "prisma": true,
+    "msgpackr-extract": true,
+    "esbuild": true,
+    "@prisma/engines": true,
+    "@prisma/client": true
   }
 }
