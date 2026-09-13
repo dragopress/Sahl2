@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @sahlbiz/web",
+    "prisma:migrate:reset": "prisma migrate reset",
     "build": "npm run build -w @sahlbiz/web",
     "lint": "npm run lint -w @sahlbiz/web",
     "db:generate": "npm run prisma:generate -w @sahlbiz/database",
