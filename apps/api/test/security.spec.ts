@@ -8,19 +8,60 @@ function context(req: any) {
   return {switchToHttp: () => ({getRequest: () => req})} as any;
 }
 
-test('password hashing uses a unique salt and verifies safely', async () => {
-  const a = await hashPassword('correct horse battery staple');
-  const b = await hashPassword('correct horse battery staple');
-  assert.notEqual(a, b);
-  assert.equal(await verifyPassword('correct horse battery staple', a), true);
-  assert.equal(await verifyPassword('wrong password', a), false);
-  assert.equal(await verifyPassword('x', 'invalid'), false);
+test('password hashing produces independently salted scrypt hashes', async () => {
+  const first = await hashPassword('correct horse battery staple');
+  const second = await hashPassword('correct horse battery staple');
+
+  assert.notEqual(first, second);
+  for (const encoded of [first, second]) {
+    const [scheme, salt, digest] = encoded.split('$');
+    assert.equal(scheme, 'scrypt');
+    assert.match(salt, /^[0-9a-f]{32}$/);
+    assert.match(digest, /^[0-9a-f]{128}$/);
+  }
+});
+
+test('password verification accepts the password used to create the hash', async () => {
+  const encoded = await hashPassword('correct horse battery staple');
+
+  assert.equal(await verifyPassword('correct horse battery staple', encoded), true);
+});
+
+test('password verification rejects a different password with an equal-length derived key', async () => {
+  const encoded = await hashPassword('correct horse battery staple');
+
+  assert.equal(await verifyPassword('wrong password', encoded), false);
+});
+
+test('password verification rejects a tampered digest of the expected length', async () => {
+  const encoded = await hashPassword('correct horse battery staple');
+  const [scheme, salt] = encoded.split('$');
+  const tampered = `${scheme}$${salt}$${'00'.repeat(64)}`;
+
+  assert.equal(await verifyPassword('correct horse battery staple', tampered), false);
+});
+
+test('password verification rejects malformed hashes without throwing', async () => {
+  const malformedHashes = [
+    '',
+    'argon2$salt$digest',
+    'scrypt$$00',
+    'scrypt$salt$',
+    'scrypt$salt$not-hex',
+    'scrypt$salt$00',
+    `scrypt$salt$${'00'.repeat(65)}`,
+  ];
+
+  for (const encoded of malformedHashes) {
+    assert.equal(await verifyPassword('password', encoded), false, encoded);
+  }
 });
 
 test('tokens are high entropy and hashes are deterministic', () => {
   const token = createToken();
-  assert.ok(token.length >= 40);
-  assert.equal(hashToken(token), hashToken(token));
+  assert.match(token, /^[A-Za-z0-9_-]+$/);
+  assert.equal(Buffer.from(token, 'base64url').length, 32);
+  assert.equal(hashToken('abc'), 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad');
   assert.notEqual(hashToken(token), hashToken(createToken()));
 });
 

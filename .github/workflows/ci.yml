@@ -4,6 +4,13 @@ on:
   push:
     branches: [main, develop]
   pull_request:
+  workflow_dispatch:
+    inputs:
+      rebuild_initial_migration:
+        description: Generate and verify a fresh initial Prisma migration from the current branch
+        required: true
+        default: false
+        type: boolean
 
 concurrency:
   group: sahlbiz-ci-${{ github.ref }}
@@ -32,6 +39,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+      DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
       CORS_ORIGINS: http://localhost:3000
@@ -46,13 +54,13 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Validate repository
         run: npm run validate
       - name: Generate Prisma client
         run: npm run db:generate
       - name: Apply migrations
-        run: npm run db:migrate -- --deploy
+        run: npm run db:migrate:deploy
       - name: Typecheck
         run: npm run typecheck
       - name: Unit tests
@@ -77,3 +85,75 @@ jobs:
         with:
           name: api-log
           path: /tmp/sahlbiz-api.log
+
+  rebuild-initial-migration:
+    name: Rebuild and verify initial Prisma migration
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.rebuild_initial_migration }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: sahlbiz
+          POSTGRES_USER: sahlbiz
+          POSTGRES_PASSWORD: sahlbiz
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sahlbiz -d sahlbiz"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    env:
+      DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+      DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Validate Prisma schema
+        run: npx prisma validate --schema=packages/database/prisma/schema.prisma
+      - name: Remove existing migration history
+        run: rm -rf packages/database/prisma/migrations
+      - name: Generate fresh initial migration
+        working-directory: packages/database
+        run: |
+          mkdir -p prisma/migrations/00000000000000_init
+          npx prisma migrate diff \
+            --from-empty \
+            --to-schema=prisma/schema.prisma \
+            --script \
+            > prisma/migrations/00000000000000_init/migration.sql
+      - name: Verify migration files
+        run: |
+          test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
+          test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
+          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' \
+            packages/database/prisma/migrations/00000000000000_init/migration.sql
+          git diff --check
+      - name: Apply generated migration to clean PostgreSQL
+        run: npm run db:migrate:deploy
+      - name: Verify migration history
+        run: npx prisma migrate status --schema=packages/database/prisma/schema.prisma
+      - name: Verify database matches Prisma schema
+        working-directory: packages/database
+        run: |
+          npx prisma migrate diff \
+            --from-url "$DATABASE_URL" \
+            --to-schema=prisma/schema.prisma \
+            --exit-code
+      - name: Show generated migration summary
+        run: |
+          echo "Generated migration:"
+          find packages/database/prisma/migrations/00000000000000_init -maxdepth 1 -type f -print
+          wc -l packages/database/prisma/migrations/00000000000000_init/migration.sql
+      - name: Upload verified migration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: verified-initial-prisma-migration
+          path: packages/database/prisma/migrations/00000000000000_init/
