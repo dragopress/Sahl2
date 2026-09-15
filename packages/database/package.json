@@ -7,7 +7,8 @@
     "prisma:migrate": "prisma migrate dev --schema=prisma/schema.prisma",
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:migrate:deploy": "prisma migrate deploy --schema=prisma/schema.prisma",
-    "prisma:migrate:reset": "prisma migrate reset"
+    "prisma:migrate:reset": "prisma migrate reset --schema=prisma/schema.prisma",
+    "prisma:migrate:fresh": "node scripts/create-fresh-migration.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
