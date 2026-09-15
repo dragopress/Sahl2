@@ -39,5 +39,50 @@ export class FinanceService {
   let projected=current;const daily=buckets.map(b=>{projected=this.money(projected+b.incoming-b.outgoing);return {...b,incoming:this.money(b.incoming),outgoing:this.money(b.outgoing),projectedBalance:projected}});
   return {currency:'MAD',horizonDays:horizon,currentBalance:current,expectedIncoming:this.money(daily.reduce((a,b)=>a+b.incoming,0)),expectedOutgoing:this.money(daily.reduce((a,b)=>a+b.outgoing,0)),projectedBalance:daily.at(-1)?.projectedBalance??current,daily};
  }
- async cashPosition(org:string){const accounts=await this.prisma.cashAccount.findMany({where:{organizationId:org,active:true}});const result: {id:string;name:string;currency:string;balance:number}[]=accounts.map(c=>({id:c.id,name:c.name,currency:c.currency,balance:this.money(Number(c.openingBalance))}));for(const c of result){const rows=await this.prisma.cashTransaction.findMany({where:{cashAccountId:c.id,organizationId:org}});c.balance=this.money(c.balance+rows.reduce((s,r)=>s+(['INCOME','TRANSFER_IN'].includes(r.type)?Number(r.amount):-Number(r.amount),0)))}return {accounts:result,total:this.money(result.reduce((s,c)=>s+c.balance,0))}}
+ async cashPosition(org: string) {
+  const accounts = await this.prisma.cashAccount.findMany({
+    where: {
+      organizationId: org,
+      active: true,
+    },
+  });
+
+  const result: {
+    id: string;
+    name: string;
+    currency: string;
+    balance: number;
+  }[] = accounts.map((c) => ({
+    id: c.id,
+    name: c.name,
+    currency: c.currency,
+    balance: this.money(Number(c.openingBalance)),
+  }));
+
+  for (const c of result) {
+    const rows = await this.prisma.cashTransaction.findMany({
+      where: {
+        cashAccountId: c.id,
+        organizationId: org,
+      },
+    });
+
+    const transactionTotal = rows.reduce<number>(
+      (sum, r) =>
+        sum +
+        (["INCOME", "TRANSFER_IN"].includes(r.type)
+          ? Number(r.amount)
+          : -Number(r.amount)),
+      0,
+    );
+
+    c.balance = this.money(c.balance + transactionTotal);
+  }
+
+  return {
+    accounts: result,
+    total: this.money(
+      result.reduce<number>((sum, c) => sum + c.balance, 0),
+    ),
+  };
 }
