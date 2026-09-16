@@ -1,5 +1,7 @@
 name: SahlBiz CI
 
+# Refresh CI workflow definition so GitHub creates a new PR run from the corrected Prisma commands.
+
 on:
   push:
     branches: [main, develop]
@@ -133,8 +135,7 @@ jobs:
         run: |
           test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
           test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
-          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' \
-            packages/database/prisma/migrations/00000000000000_init/migration.sql
+          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' packages/database/prisma/migrations/00000000000000_init/migration.sql
           git diff --check
       - name: Apply generated migration to clean PostgreSQL
         run: npm run db:migrate:deploy
