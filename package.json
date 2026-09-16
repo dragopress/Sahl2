@@ -28,7 +28,11 @@
     "ops:restore-objects": "sh scripts/restore-object-storage.sh"
   },
   "dependencies": {
+    "@prisma/composer": "0.20.0",
+    "@prisma/composer-prisma-cloud": "0.20.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "alchemy": "2.0.0-beta.74",
+    "effect": "4.0.0-rc.112",
     "pg": "^8.23.0",
     "postcss": "^8.5.26"
   },
@@ -38,5 +42,17 @@
     "esbuild": true,
     "@prisma/engines": true,
     "@prisma/client": true
+  },
+  "devDependencies": {
+    "prisma": "8.0.0-rc.15"
+  },
+  "overrides": {
+    "@effect/platform-bun": "4.0.0-rc.112",
+    "@effect/platform-node": "4.0.0-rc.112",
+    "@effect/platform-node-shared": "4.0.0-rc.112",
+    "@effect/sql-d1": "4.0.0-rc.112",
+    "@effect/sql-pg": "4.0.0-rc.112",
+    "@effect/vitest": "4.0.0-rc.112",
+    "effect": "4.0.0-rc.112"
   }
 }
