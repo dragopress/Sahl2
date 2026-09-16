@@ -1,7 +1,8 @@
 import {BadRequestException,Injectable,NotFoundException} from '@nestjs/common';
 import {PrismaService} from '../common/prisma.service';
 
-const n=(v:any)=>Number(v??0);
+type Insight={type:'cash'|'inventory'|'operations'|'finance'|'project'|'general';priority:'critical'|'high'|'medium'|'low';title:string;message:string;entityType:string;entityId:string|null};
+const n=(v:unknown)=>Number(v??0);
 const money=(v:number)=>Math.round(v*100)/100;
 
 @Injectable()
@@ -29,7 +30,7 @@ export class AiService {
  }
 
  async insights(o:string,userId:string|undefined,limit=8){
-  const c=await this.context(o); const now=new Date(); const out:any[]=[];
+  const c=await this.context(o); const now=new Date(); const out:Insight[]=[];
   if(c.overdueReceivables>0) out.push({type:'cash',priority:'high',title:'Encaissements en retard',message:`${c.overdueReceivables.toLocaleString('fr-MA')} MAD de factures sont en retard. Priorisez les relances clients.`,entityType:'invoices',entityId:null});
   if(c.cashBalance<0) out.push({type:'cash',priority:'critical',title:'Trésorerie négative',message:`La trésorerie calculée est de ${c.cashBalance.toLocaleString('fr-MA')} MAD. Vérifiez les sorties prévues et les encaissements attendus.`,entityType:'cashflow',entityId:null});
   if(c.lowStockProducts>0) out.push({type:'inventory',priority:'medium',title:'Stock à surveiller',message:`${c.lowStockProducts} produit(s) sont au niveau minimum ou en dessous.`,entityType:'inventory',entityId:null});

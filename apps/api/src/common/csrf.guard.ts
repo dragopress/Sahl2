@@ -1,11 +1,12 @@
 import {CanActivate,ExecutionContext,ForbiddenException,Injectable} from '@nestjs/common';
+import {AuthenticatedRequest} from './request.types';
 
 const SAFE_METHODS=new Set(['GET','HEAD','OPTIONS']);
 
 @Injectable()
 export class CsrfGuard implements CanActivate{
   canActivate(ctx:ExecutionContext){
-    const req:any=ctx.switchToHttp().getRequest();
+    const req=ctx.switchToHttp().getRequest<AuthenticatedRequest>();
     if(SAFE_METHODS.has(String(req.method).toUpperCase())) return true;
     const cookie=String(req.headers?.cookie||'');
     if(!cookie.includes('sahlbiz_session=')) return true;
