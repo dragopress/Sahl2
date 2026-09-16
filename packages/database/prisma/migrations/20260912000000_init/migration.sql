@@ -1,5 +1,7 @@
 -- Initial Prisma baseline for the SahlBiz database.
 -- Generated from packages/database/prisma/schema.prisma.
+-- Apply directly only to an empty/disposable database. For an existing database,
+-- follow docs/ops/PRODUCTION-DEPLOYMENT.md#baseline-migration-safety first.
 
 CREATE TYPE "MembershipRole" AS ENUM ('OWNER', 'ADMIN', 'MANAGER', 'ACCOUNTANT', 'SALES', 'EMPLOYEE', 'VIEWER');
 CREATE TYPE "CustomerType" AS ENUM ('INDIVIDUAL', 'COMPANY');

@@ -2,10 +2,12 @@ node_modules
 .next
 dist
 coverage
-!.env.example
 *.log
 
 # Local environment files
+.env
+.env.*
+!.env.example
 packages/database/.env
 
 # TypeScript build cache
