@@ -69,15 +69,14 @@ jobs:
           mkdir -p prisma/migrations/00000000000000_init
           npx prisma migrate diff \
             --from-empty \
-            --to-schema=prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
             --script \
             > prisma/migrations/00000000000000_init/migration.sql
       - name: Verify generated migration
         run: |
           test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
           test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
-          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' \
-            packages/database/prisma/migrations/00000000000000_init/migration.sql
+          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' packages/database/prisma/migrations/00000000000000_init/migration.sql
           git diff --check
       - name: Apply migrations
         run: npm run db:migrate:deploy
@@ -87,7 +86,7 @@ jobs:
           npx prisma migrate status --schema=prisma/schema.prisma
           npx prisma migrate diff \
             --from-url "$DATABASE_URL" \
-            --to-schema=prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
             --exit-code
       - name: Typecheck
         run: npm run typecheck
@@ -166,15 +165,14 @@ jobs:
           mkdir -p prisma/migrations/00000000000000_init
           npx prisma migrate diff \
             --from-empty \
-            --to-schema=prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
             --script \
             > prisma/migrations/00000000000000_init/migration.sql
       - name: Verify migration files
         run: |
           test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
           test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
-          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' \
-            packages/database/prisma/migrations/00000000000000_init/migration.sql
+          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' packages/database/prisma/migrations/00000000000000_init/migration.sql
           git diff --check
       - name: Apply generated migration to clean PostgreSQL
         run: npm run db:migrate:deploy
@@ -185,7 +183,7 @@ jobs:
         run: |
           npx prisma migrate diff \
             --from-url "$DATABASE_URL" \
-            --to-schema=prisma/schema.prisma \
+            --to-schema-datamodel prisma/schema.prisma \
             --exit-code
       - name: Show generated migration summary
         run: |
