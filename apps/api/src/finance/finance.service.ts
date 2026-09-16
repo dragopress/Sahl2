@@ -85,4 +85,5 @@ export class FinanceService {
       result.reduce<number>((sum, c) => sum + c.balance, 0),
     ),
   };
+ }
 }
