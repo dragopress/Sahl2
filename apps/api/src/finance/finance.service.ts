@@ -39,6 +39,7 @@ export class FinanceService {
   let projected=current;const daily=buckets.map(b=>{projected=this.money(projected+b.incoming-b.outgoing);return {...b,incoming:this.money(b.incoming),outgoing:this.money(b.outgoing),projectedBalance:projected}});
   return {currency:'MAD',horizonDays:horizon,currentBalance:current,expectedIncoming:this.money(daily.reduce((a,b)=>a+b.incoming,0)),expectedOutgoing:this.money(daily.reduce((a,b)=>a+b.outgoing,0)),projectedBalance:daily.at(-1)?.projectedBalance??current,daily};
  }
+ /** Calculates active cash-account balances and their organization-wide total. */
  async cashPosition(org: string) {
   const accounts = await this.prisma.cashAccount.findMany({
     where: {
