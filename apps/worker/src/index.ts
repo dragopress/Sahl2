@@ -1,11 +1,11 @@
 import {Queue,Worker} from 'bullmq';
 import IORedis from 'ioredis';
-import {PrismaClient,NotificationType} from '@prisma/client';
+import {PrismaClient} from '@prisma/client';
 const connection=new IORedis(process.env.REDIS_URL||'redis://localhost:6379',{maxRetriesPerRequest:null});
 export const jobs=new Queue('sahlbiz',{connection});
 const db=new PrismaClient();
-const money=(n:unknown)=>Number(n||0);
-async function notify(orgId:string,type:NotificationType,title:string,message:string,entityType?:string,entityId?:string){const memberships=await db.membership.findMany({where:{organizationId:orgId},select:{userId:true}});for(const m of memberships){const existing=await db.notification.findFirst({where:{organizationId:orgId,userId:m.userId,type,entityId,readAt:null,createdAt:{gte:new Date(Date.now()-86400000)}}});if(!existing)await db.notification.create({data:{organizationId:orgId,userId:m.userId,type,title,message,entityType,entityId}});}}
+const money=(n:any)=>Number(n||0);
+async function notify(orgId:string,type:any,title:string,message:string,entityType?:string,entityId?:string){const memberships=await db.membership.findMany({where:{organizationId:orgId},select:{userId:true}});for(const m of memberships){const existing=await db.notification.findFirst({where:{organizationId:orgId,userId:m.userId,type,entityId,readAt:null,createdAt:{gte:new Date(Date.now()-86400000)}}});if(!existing)await db.notification.create({data:{organizationId:orgId,userId:m.userId,type,title,message,entityType,entityId}});}}
 async function runAutomation(){const orgs=await db.organization.findMany({select:{id:true}});const now=new Date();const horizon=new Date(now.getTime()+48*3600000);for(const o of orgs){
  let rules=await db.automationRule.findMany({where:{organizationId:o.id,enabled:true}});if(!rules.length){for(const [name,type] of [['Factures en retard','OVERDUE_INVOICES'],['Stock faible','LOW_STOCK'],['Échéances tâches','TASK_DEADLINES'],['Dépenses à approuver','EXPENSE_APPROVAL']] as const){await db.automationRule.upsert({where:{organizationId_name:{organizationId:o.id,name}},update:{enabled:true},create:{organizationId:o.id,name,type,enabled:true,config:{}}});}rules=await db.automationRule.findMany({where:{organizationId:o.id,enabled:true}});}
  for(const r of rules){

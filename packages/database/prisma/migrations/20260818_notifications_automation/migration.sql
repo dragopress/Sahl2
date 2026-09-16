@@ -1,0 +1,11 @@
+CREATE TYPE "NotificationType" AS ENUM ('OVERDUE_INVOICE','LOW_STOCK','TASK_DUE','EXPENSE_APPROVAL','CASHFLOW_RISK','SYSTEM');
+CREATE TYPE "AutomationRuleType" AS ENUM ('OVERDUE_INVOICES','LOW_STOCK','TASK_DEADLINES','EXPENSE_APPROVAL','CASHFLOW_RISK');
+CREATE TABLE "Notification" ("id" TEXT NOT NULL,"organizationId" TEXT NOT NULL,"userId" TEXT,"type" "NotificationType" NOT NULL,"title" TEXT NOT NULL,"message" TEXT NOT NULL,"readAt" TIMESTAMP(3),"entityType" TEXT,"entityId" TEXT,"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,CONSTRAINT "Notification_pkey" PRIMARY KEY ("id"));
+CREATE TABLE "AutomationRule" ("id" TEXT NOT NULL,"organizationId" TEXT NOT NULL,"name" TEXT NOT NULL,"type" "AutomationRuleType" NOT NULL,"enabled" BOOLEAN NOT NULL DEFAULT true,"config" JSONB NOT NULL DEFAULT '{}',"lastRunAt" TIMESTAMP(3),"createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,"updatedAt" TIMESTAMP(3) NOT NULL,CONSTRAINT "AutomationRule_pkey" PRIMARY KEY ("id"));
+CREATE UNIQUE INDEX "AutomationRule_organizationId_name_key" ON "AutomationRule"("organizationId","name");
+CREATE INDEX "Notification_organizationId_createdAt_idx" ON "Notification"("organizationId","createdAt");
+CREATE INDEX "Notification_userId_readAt_idx" ON "Notification"("userId","readAt");
+CREATE INDEX "AutomationRule_organizationId_enabled_type_idx" ON "AutomationRule"("organizationId","enabled","type");
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "AutomationRule" ADD CONSTRAINT "AutomationRule_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;

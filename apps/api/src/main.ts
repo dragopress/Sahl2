@@ -9,7 +9,7 @@ import {securityHeadersMiddleware} from './common/security-headers.middleware';
 async function bootstrap(){
   const app=await NestFactory.create(AppModule,{bodyParser:true});
   app.setGlobalPrefix('api/v1');
-  app.getHttpAdapter().getInstance().set('trust proxy',process.env.TRUST_PROXY==='true');
+  app.set('trust proxy',process.env.TRUST_PROXY==='true');
   const origins=String(process.env.CORS_ORIGINS||'http://localhost:3000').split(',').map(v=>v.trim()).filter(Boolean);
   if(process.env.NODE_ENV==='production' && origins.length===0) throw new Error('CORS_ORIGINS must be configured in production');
   app.enableCors({origin:origins,credentials:true,methods:['GET','HEAD','POST','PATCH','PUT','DELETE','OPTIONS'],allowedHeaders:['Content-Type','Authorization','X-Organization-Id','X-Request-Id','Idempotency-Key'],exposedHeaders:['X-Request-Id','Retry-After']});

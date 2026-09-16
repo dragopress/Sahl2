@@ -7,10 +7,10 @@ const COOKIE='sahlbiz_session';
  private setCookie(res:Response,token:string){res.cookie(COOKIE,token,{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/',maxAge:30*86400000})}
  private token(req: Request) {
   const header = req.headers.cookie?.split(';')
-    .map((v: string) => v.trim())
-    .find((v: string) => v.startsWith(COOKIE + '='));
-  return header?.slice(COOKIE.length + 1);
- }
+    .map(v => v.trim())
+    .find(v => v.startsWith(COOKIE + '='));
+  return header?.slice(COOKIE.length + 1);  // ✓ Correct
+}
  @Post('register') async register(@Body() dto:RegisterDto,@Res({passthrough:true}) res:Response){const result=await this.auth.register(dto);this.setCookie(res,result.sessionToken);return {user:result.user,organizations:result.organizations}}
  @Post('login') async login(@Body() dto:LoginDto,@Res({passthrough:true}) res:Response){const result=await this.auth.login(dto);this.setCookie(res,result.sessionToken);return {user:result.user,organizations:result.organizations}}
  @Post('logout') async logout(@Req() req:Request,@Res({passthrough:true}) res:Response){await this.auth.logout(this.token(req));res.clearCookie(COOKIE,{httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax',path:'/'});return {ok:true}}

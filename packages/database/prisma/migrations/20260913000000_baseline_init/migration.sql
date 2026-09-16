@@ -11,6 +11,6 @@ Learn more: https://pris.ly/d/telemetry
 [2K[1G[32m✔[39m [1mSubmit error report[22m [90m›[39m Yes
 [?25hSubmitting...
 
-We successfully received the error report id: 20007
+We successfully received the error report id: 20008
 
 Thanks a lot for your help! 🙏

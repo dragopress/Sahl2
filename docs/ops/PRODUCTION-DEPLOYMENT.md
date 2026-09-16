@@ -25,21 +25,6 @@ docker compose --env-file .env.production -f docker-compose.production.yml up -d
 
 The `migrate` service runs `prisma migrate deploy` once. API containers do not run migrations on startup, avoiding migration races during horizontal scaling.
 
-## Baseline migration safety
-
-`20260912000000_init` replaces the feature migration history and may be deployed directly only to a new, empty, or otherwise disposable database. Do not run `prisma migrate deploy` against a persistent database until its migration history and schema have been reconciled.
-
-For each persistent target:
-
-1. Take and verify a restorable backup, then perform the remaining steps against a restored staging copy.
-2. Record the applied history from `"_prisma_migrations"`, including failed or rolled-back entries, and retain the exact migration directories from the application release that produced it.
-3. Compare the restored database with `packages/database/prisma/schema.prisma` using `prisma migrate diff`. Review any schema or data differences; do not apply the baseline while differences remain unexplained.
-4. If the schemas are equivalent, record `20260912000000_init` as applied with `prisma migrate resolve --applied 20260912000000_init`; do not execute its DDL against the populated database.
-5. If the schemas differ, preserve the existing migration history and create reviewed forward-only reconciliation migrations. Validate them against the restored copy before scheduling a controlled production deployment.
-6. Re-run the schema diff, require no unexpected differences, and retain the history snapshot and rollback/restore plan with the deployment record.
-
-If the target's history cannot be established, treat it as persistent and do not apply the baseline.
-
 ## Health checks
 
 - API live: `/api/v1/health/live`

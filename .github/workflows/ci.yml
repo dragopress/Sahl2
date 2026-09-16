@@ -1,7 +1,5 @@
 name: SahlBiz CI
 
-# Refresh CI workflow definition so GitHub creates a new PR run from the corrected Prisma commands.
-
 on:
   push:
     branches: [main, develop]
