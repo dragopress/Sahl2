@@ -3,9 +3,7 @@ import {DocumentsController} from './documents.controller';
 import {DocumentsService} from './documents.service';
 import {PrismaService} from '../common/prisma.service';
 import {AuditService} from '../common/audit.service';
+import {AuthModule} from '../auth/auth.module';
 
-@Module({
-  controllers:[DocumentsController],
-  providers:[DocumentsService,PrismaService,AuditService],
-})
+@Module({imports:[AuthModule],controllers:[DocumentsController],providers:[DocumentsService,PrismaService,AuditService]})
 export class DocumentsModule{}
