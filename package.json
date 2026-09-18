@@ -2,10 +2,7 @@
   "name": "sahlbiz",
   "private": true,
   "version": "0.2.0-rc.1",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "npm run dev -w @sahlbiz/web",
     "prisma:migrate:reset": "npm run prisma:migrate:reset -w @sahlbiz/database",
@@ -33,11 +30,5 @@
     "pg": "^8.23.0",
     "postcss": "^8.5.26"
   },
-  "allowScripts": {
-    "prisma": true,
-    "msgpackr-extract": true,
-    "esbuild": true,
-    "@prisma/engines": true,
-    "@prisma/client": true
-  }
+  "allowScripts": {"prisma": true, "msgpackr-extract": true, "esbuild": true, "@prisma/engines": true, "@prisma/client": true}
 }
