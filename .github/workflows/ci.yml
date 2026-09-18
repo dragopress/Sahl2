@@ -18,6 +18,9 @@ concurrency:
   group: sahlbiz-ci-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   quality:
     runs-on: ubuntu-latest
@@ -61,8 +64,32 @@ jobs:
         run: npm run validate
       - name: Generate Prisma client
         run: npm run db:generate
+      - name: Rebuild Prisma migration history from schema
+        working-directory: packages/database
+        run: |
+          rm -rf prisma/migrations
+          mkdir -p prisma/migrations/00000000000000_init
+          npx prisma migrate diff \
+            --from-empty \
+            --to-schema-datamodel prisma/schema.prisma \
+            --script \
+            > prisma/migrations/00000000000000_init/migration.sql
+      - name: Verify generated migration
+        run: |
+          test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
+          test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
+          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' packages/database/prisma/migrations/00000000000000_init/migration.sql
+          git diff --check
       - name: Apply migrations
         run: npm run db:migrate:deploy
+      - name: Verify database matches Prisma schema
+        working-directory: packages/database
+        run: |
+          npx prisma migrate status --schema=prisma/schema.prisma
+          npx prisma migrate diff \
+            --from-url "$DATABASE_URL" \
+            --to-schema-datamodel prisma/schema.prisma \
+            --exit-code
       - name: Typecheck
         run: npm run typecheck
       - name: Unit tests
@@ -81,6 +108,18 @@ jobs:
           exit 1
       - name: End-to-end critical workflow tests
         run: npm run e2e
+      - name: Persist verified migration history
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          if git diff --quiet -- packages/database/prisma/migrations; then
+            echo "Migration history is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/database/prisma/migrations
+          git commit -m "chore(database): rebuild migration history from schema"
+          git push origin HEAD:main
       - name: Upload API log on failure
         if: failure()
         uses: actions/upload-artifact@v4
