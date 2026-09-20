@@ -26,7 +26,7 @@ export class AiService {
   const lowStock=products.filter(p=>n(p.stock)<=n(p.minimumStock)).length;
   const cashBalance=cash.reduce((a,c)=>a+n(c.openingBalance)+c.transactions.reduce((b,t)=>b+(['INCOME','TRANSFER_IN'].includes(t.type)?n(t.amount):-n(t.amount)),0),0);
   const projectMargins=projects.map(p=>{const r=p.invoices.reduce((a,i)=>a+n(i.total),0);const c=p.expenses.reduce((a,e)=>a+n(e.amount),0);return{budget:n(p.budget),revenue:r,cost:c,margin:r-c}});
-  return {currency:'MAD',receivables:money(receivables),overdueReceivables:money(overdue),expenseTotal:money(expenseTotal),cashBalance:money(cashBalance),openTasks,overdueTasks,lowStockProducts:lowStock,projects:projectMargins};
+  return {organizationId:o,currency:'MAD',receivables:money(receivables),overdueReceivables:money(overdue),expenseTotal:money(expenseTotal),cashBalance:money(cashBalance),openTasks,overdueTasks,lowStockProducts:lowStock,projects:projectMargins};
  }
 
  async insights(o:string,userId:string|undefined,limit=8){
