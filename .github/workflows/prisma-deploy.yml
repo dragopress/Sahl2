@@ -1,0 +1,61 @@
+name: Prisma Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'packages/database/**'
+      - 'packages/storage/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/prisma-deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: prisma-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build API and deploy Prisma migrations
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NODE_ENV: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Validate repository
+        run: npm run validate
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      # Prisma Cloud expects the application build output to exist before deploy.
+      - name: Build storage package
+        run: npm run build -w @sahlbiz/storage
+
+      - name: Build API
+        run: npm run build -w @sahlbiz/api
+
+      - name: Verify API build output
+        run: test -f apps/api/dist/main.js
+
+      - name: Deploy Prisma migrations
+        run: npm run db:migrate:deploy
