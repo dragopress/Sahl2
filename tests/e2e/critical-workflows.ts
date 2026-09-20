@@ -160,9 +160,9 @@ test('critical business workflows and tenant isolation', async () => {
   assert.equal(bSearch.items.length, 0, 'global search must be tenant-scoped');
 
   const docs = await get('/documents', a.cookie);
-  assert.ok(Array.isArray(docs.data), 'document listing must be tenant-scoped');
+  assert.ok(Array.isArray(docs.items), 'document listing must be tenant-scoped');
   const bDocs = await get('/documents', b.cookie);
-  assert.equal(bDocs.data.length, 0);
+  assert.equal(bDocs.items.length, 0);
 
   const ai = await get('/ai/context', a.cookie);
   assert.equal(ai.organizationId, a.organizationId);

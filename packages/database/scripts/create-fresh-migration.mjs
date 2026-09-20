@@ -9,14 +9,16 @@ const backupMigrationsDir = resolve(backupDir, "migrations");
 let hasBackup = false;
 
 try {
-  try {
-    await rename(migrationsDir, backupMigrationsDir);
-    hasBackup = true;
-  } catch (error) {
-    if (error?.code !== "ENOENT") {
-      throw error;
-    }
+  await rename(migrationsDir, backupMigrationsDir);
+  hasBackup = true;
+} catch (error) {
+  if (error?.code !== "ENOENT") {
+    await rm(backupDir, { recursive: true, force: true });
+    throw error;
   }
+
+  await rm(backupDir, { recursive: true, force: true });
+}
 
   let migrationFile;
 
@@ -58,7 +60,18 @@ try {
     throw error;
   }
 
-  console.log(`Fresh Prisma migration created: ${migrationFile}`);
-} finally {
+  migrationFile = files[0];
+} catch (error) {
+  await rm(migrationsDir, { recursive: true, force: true });
+  if (hasBackup) {
+    await rename(backupMigrationsDir, migrationsDir);
+  } else {
+    await rm(backupDir, { recursive: true, force: true });
+  }
+  throw error;
+}
+
+if (hasBackup) {
   await rm(backupDir, { recursive: true, force: true });
 }
+console.log(`Fresh Prisma migration created: ${migrationFile}`);
