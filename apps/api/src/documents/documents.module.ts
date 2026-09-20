@@ -1,9 +1,8 @@
 import {Module} from '@nestjs/common';
 import {DocumentsController} from './documents.controller';
 import {DocumentsService} from './documents.service';
-import {PrismaService} from '../common/prisma.service';
-import {AuditService} from '../common/audit.service';
 import {AuthModule} from '../auth/auth.module';
+import {CommonModule} from '../common/common.module';
 
-@Module({imports:[AuthModule],controllers:[DocumentsController],providers:[DocumentsService,PrismaService,AuditService]})
+@Module({imports:[AuthModule,CommonModule],controllers:[DocumentsController],providers:[DocumentsService]})
 export class DocumentsModule{}
