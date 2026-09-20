@@ -1,16 +1,17 @@
-import {Request} from 'express';
+import { Request } from 'express';
 
 export interface MembershipContext {
-  organizationId:string;
-  role:string;
+  organizationId: string;
+  role: string;
 }
 
 export interface AuthContext {
-  userId:string;
-  memberships:MembershipContext[];
+  userId: string;
+  memberships: MembershipContext[];
 }
 
-export type AuthenticatedRequest=Request & {
-  auth?:AuthContext;
-  membership?:MembershipContext;
+export type AuthenticatedRequest = Request & {
+  auth?: AuthContext;
+  membership?: MembershipContext;
+  organizationId?: string;
 };
