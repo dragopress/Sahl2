@@ -32,6 +32,7 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 20
     env:
       DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+      DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
       REDIS_URL: redis://localhost:6379
       NODE_ENV: test
       CORS_ORIGINS: http://localhost:3000

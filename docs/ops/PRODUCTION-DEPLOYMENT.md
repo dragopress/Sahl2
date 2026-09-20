@@ -15,7 +15,7 @@
 1. Copy `.env.production.example` to `.env.production`.
 2. Replace every `CHANGE_ME...` value with long random secrets.
 3. Set `CORS_ORIGINS` to the exact HTTPS frontend origin.
-4. Set `DATABASE_URL` and `REDIS_URL` using the production credentials.
+4. Set `DATABASE_URL`, `DIRECT_URL`, and `REDIS_URL` using the production credentials. `DIRECT_URL` must be a direct PostgreSQL connection suitable for Prisma migrations; do not point it at a transaction pooler.
 5. Configure an external reverse proxy/TLS terminator in front of `web` and `api`.
 6. Build and start:
 
