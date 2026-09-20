@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   NODE_VERSION: 22
@@ -58,7 +58,6 @@ jobs:
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 20
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -130,9 +129,6 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U sahlbiz -d sahlbiz"
           --health-interval 5s --health-timeout 5s --health-retries 20
-    env:
-      DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
-      DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -202,6 +198,23 @@ jobs:
     name: Release candidate checks
     if: ${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-rc.') }}
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: sahlbiz
+          POSTGRES_USER: sahlbiz
+          POSTGRES_PASSWORD: sahlbiz
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U sahlbiz -d sahlbiz"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
