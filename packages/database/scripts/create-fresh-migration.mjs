@@ -7,71 +7,62 @@ const migrationsDir = resolve(prismaDir, "migrations");
 const backupDir = await mkdtemp(resolve(prismaDir, ".migrations-backup-"));
 const backupMigrationsDir = resolve(backupDir, "migrations");
 let hasBackup = false;
+let migrationFile;
 
 try {
-  await rename(migrationsDir, backupMigrationsDir);
-  hasBackup = true;
-} catch (error) {
-  if (error?.code !== "ENOENT") {
-    await rm(backupDir, { recursive: true, force: true });
-    throw error;
+  try {
+    await rename(migrationsDir, backupMigrationsDir);
+    hasBackup = true;
+  } catch (error) {
+    if (error?.code !== "ENOENT") {
+      throw error;
+    }
   }
 
-  await rm(backupDir, { recursive: true, force: true });
-}
+  await mkdir(migrationsDir, { recursive: true });
 
-  let migrationFile;
+  execFileSync(
+    "npx",
+    [
+      "prisma",
+      "migrate",
+      "dev",
+      "--schema=prisma/schema.prisma",
+      "--name",
+      "init",
+      "--create-only",
+    ],
+    { stdio: "inherit" },
+  );
 
-  try {
-    await mkdir(migrationsDir, { recursive: true });
-
-    execFileSync(
-      "npx",
-      [
-        "prisma",
-        "migrate",
-        "dev",
-        "--schema=prisma/schema.prisma",
-        "--name",
-        "init",
-        "--create-only",
-      ],
-      { stdio: "inherit" },
+  const stdout = execFileSync(
+    "find",
+    [migrationsDir, "-maxdepth", "2", "-type", "f", "-name", "migration.sql"],
+    { encoding: "utf8" },
+  );
+  const files = stdout.trim().split("\n").filter(Boolean);
+  if (files.length !== 1) {
+    throw new Error(
+      `Expected exactly one fresh migration.sql, found ${files.length}`,
     );
-
-    const stdout = execFileSync(
-      "find",
-      [migrationsDir, "-maxdepth", "2", "-type", "f", "-name", "migration.sql"],
-      { encoding: "utf8" },
-    );
-    const files = stdout.trim().split("\n").filter(Boolean);
-    if (files.length !== 1) {
-      throw new Error(
-        `Expected exactly one fresh migration.sql, found ${files.length}`,
-      );
-    }
-
-    migrationFile = files[0];
-  } catch (error) {
-    await rm(migrationsDir, { recursive: true, force: true });
-    if (hasBackup) {
-      await rename(backupMigrationsDir, migrationsDir);
-    }
-    throw error;
   }
 
   migrationFile = files[0];
-} catch (error) {
-  await rm(migrationsDir, { recursive: true, force: true });
+
   if (hasBackup) {
-    await rename(backupMigrationsDir, migrationsDir);
+    await rm(backupDir, { recursive: true, force: true });
   } else {
     await rm(backupDir, { recursive: true, force: true });
   }
+
+  console.log(`Fresh Prisma migration created: ${migrationFile}`);
+} catch (error) {
+  await rm(migrationsDir, { recursive: true, force: true });
+
+  if (hasBackup) {
+    await rename(backupMigrationsDir, migrationsDir);
+  }
+
+  await rm(backupDir, { recursive: true, force: true });
   throw error;
 }
-
-if (hasBackup) {
-  await rm(backupDir, { recursive: true, force: true });
-}
-console.log(`Fresh Prisma migration created: ${migrationFile}`);
