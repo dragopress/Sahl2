@@ -1,28 +1,45 @@
-name: SahlBiz CI
-
-# Refresh CI workflow definition so GitHub creates a new PR run from the corrected Prisma commands.
+name: SahlBiz CI/CD
 
 on:
   push:
     branches: [main, develop]
+    tags:
+      - 'v*-rc.*'
   pull_request:
   workflow_dispatch:
     inputs:
       rebuild_initial_migration:
-        description: Generate and verify a fresh initial Prisma migration from the current branch
+        description: Generate and verify a fresh initial Prisma migration
+        required: true
+        default: false
+        type: boolean
+      deploy_production:
+        description: Run production Prisma migrations after CI
         required: true
         default: false
         type: boolean
 
 concurrency:
-  group: sahlbiz-ci-${{ github.ref }}
+  group: sahlbiz-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: write
 
+env:
+  NODE_VERSION: 22
+  DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+  DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
+  REDIS_URL: redis://localhost:6379
+  NODE_ENV: test
+  CORS_ORIGINS: http://localhost:3000
+  TRUST_PROXY: 'false'
+  PORT: '3001'
+  E2E_BASE_URL: http://127.0.0.1:3001/api/v1
+
 jobs:
   quality:
+    name: Validate, test, build and E2E
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -42,21 +59,13 @@ jobs:
           --health-cmd "redis-cli ping"
           --health-interval 5s --health-timeout 5s --health-retries 20
 
-    env:
-      DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
-      DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
-      REDIS_URL: redis://localhost:6379
-      NODE_ENV: test
-      CORS_ORIGINS: http://localhost:3000
-      TRUST_PROXY: 'false'
-      PORT: '3001'
-      E2E_BASE_URL: http://127.0.0.1:3001/api/v1
-
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
@@ -64,39 +73,30 @@ jobs:
         run: npm run validate
       - name: Generate Prisma client
         run: npm run db:generate
-      - name: Rebuild Prisma migration history from schema
-        working-directory: packages/database
+      - name: Verify Prisma migration history
         run: |
-          rm -rf prisma/migrations
-          mkdir -p prisma/migrations/00000000000000_init
-          npx prisma migrate diff \
-            --from-empty \
-            --to-schema-datamodel prisma/schema.prisma \
-            --script \
-            > prisma/migrations/00000000000000_init/migration.sql
-      - name: Verify generated migration
-        run: |
-          test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
-          test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
-          grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' packages/database/prisma/migrations/00000000000000_init/migration.sql
-          git diff --check
-      - name: Apply migrations
-        run: npm run db:migrate:deploy
+          npm run db:migrate:deploy
+          npx prisma migrate status --schema=packages/database/prisma/schema.prisma
       - name: Verify database matches Prisma schema
         working-directory: packages/database
         run: |
-          npx prisma migrate status --schema=prisma/schema.prisma
           npx prisma migrate diff \
             --from-url "$DATABASE_URL" \
             --to-schema-datamodel prisma/schema.prisma \
             --exit-code
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Typecheck API
+        run: npm run typecheck -w @sahlbiz/api
+      - name: Typecheck web
+        run: npm run typecheck -w @sahlbiz/web
       - name: Unit tests
         run: npm test
-      - name: Build all applications
-        run: npm run build
-      - name: Start API for health smoke test
+      - name: Build storage
+        run: npm run build -w @sahlbiz/storage
+      - name: Build API
+        run: npm run build -w @sahlbiz/api
+      - name: Build web
+        run: npm run build -w @sahlbiz/web
+      - name: Start API
         run: |
           npm run start -w @sahlbiz/api > /tmp/sahlbiz-api.log 2>&1 &
           echo $! > /tmp/sahlbiz-api.pid
@@ -106,20 +106,8 @@ jobs:
           done
           cat /tmp/sahlbiz-api.log
           exit 1
-      - name: End-to-end critical workflow tests
+      - name: End-to-end tests
         run: npm run e2e
-      - name: Persist verified migration history
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        run: |
-          if git diff --quiet -- packages/database/prisma/migrations; then
-            echo "Migration history is already current."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add packages/database/prisma/migrations
-          git commit -m "chore(database): rebuild migration history from schema"
-          git push origin HEAD:main
       - name: Upload API log on failure
         if: failure()
         uses: actions/upload-artifact@v4
@@ -131,8 +119,6 @@ jobs:
     name: Rebuild and verify initial Prisma migration
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.rebuild_initial_migration }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     services:
       postgres:
         image: postgres:17-alpine
@@ -144,56 +130,98 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U sahlbiz -d sahlbiz"
           --health-interval 5s --health-timeout 5s --health-retries 20
-
     env:
       DATABASE_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
       DIRECT_URL: postgresql://sahlbiz:sahlbiz@localhost:5432/sahlbiz?schema=public
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-      - name: Validate Prisma schema
-        run: npx prisma validate --schema=packages/database/prisma/schema.prisma
-      - name: Remove existing migration history
-        run: rm -rf packages/database/prisma/migrations
-      - name: Generate fresh initial migration
+      - run: npm ci --no-audit --no-fund
+      - run: npx prisma validate --schema=packages/database/prisma/schema.prisma
+      - name: Generate migration
         working-directory: packages/database
         run: |
+          rm -rf prisma/migrations
           mkdir -p prisma/migrations/00000000000000_init
           npx prisma migrate diff \
             --from-empty \
             --to-schema-datamodel prisma/schema.prisma \
-            --script \
-            > prisma/migrations/00000000000000_init/migration.sql
-      - name: Verify migration files
+            --script > prisma/migrations/00000000000000_init/migration.sql
+      - name: Verify migration
         run: |
           test -s packages/database/prisma/migrations/00000000000000_init/migration.sql
           test "$(find packages/database/prisma/migrations -mindepth 1 -maxdepth 1 -type d | wc -l)" -eq 1
           grep -qE '^CREATE TABLE|^CREATE TYPE|^CREATE SEQUENCE|^CREATE SCHEMA' packages/database/prisma/migrations/00000000000000_init/migration.sql
           git diff --check
-      - name: Apply generated migration to clean PostgreSQL
+      - name: Apply migration
         run: npm run db:migrate:deploy
-      - name: Verify migration history
-        run: npx prisma migrate status --schema=packages/database/prisma/schema.prisma
-      - name: Verify database matches Prisma schema
+      - name: Verify schema parity
         working-directory: packages/database
         run: |
+          npx prisma migrate status --schema=prisma/schema.prisma
           npx prisma migrate diff \
             --from-url "$DATABASE_URL" \
             --to-schema-datamodel prisma/schema.prisma \
             --exit-code
-      - name: Show generated migration summary
-        run: |
-          echo "Generated migration:"
-          find packages/database/prisma/migrations/00000000000000_init -maxdepth 1 -type f -print
-          wc -l packages/database/prisma/migrations/00000000000000_init/migration.sql
-      - name: Upload verified migration artifact
+      - name: Upload verified migration
         uses: actions/upload-artifact@v4
         with:
           name: verified-initial-prisma-migration
           path: packages/database/prisma/migrations/00000000000000_init/
+
+  production-migrations:
+    name: Deploy Prisma migrations to production
+    needs: quality
+    if: ${{ (github.ref == 'refs/heads/main' && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && inputs.deploy_production) }}
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --include=dev --no-audit --no-fund
+      - name: Validate repository
+        run: npm run validate
+      - name: Generate Prisma client
+        run: npm run db:generate
+      - name: Deploy migrations
+        run: npm run db:migrate:deploy
+
+  release-candidate:
+    name: Release candidate checks
+    if: ${{ startsWith(github.ref, 'refs/tags/v') && contains(github.ref, '-rc.') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run validate
+      - run: npm run release:check
+      - run: npm run db:generate
+      - run: npm run db:migrate:deploy
+      - run: npm test
+      - run: npm run typecheck -w @sahlbiz/api
+      - run: npm run typecheck -w @sahlbiz/web
+      - run: npm run build -w @sahlbiz/storage
+      - run: npm run build -w @sahlbiz/api
+      - run: npm run build -w @sahlbiz/web
+      - run: npm run release:manifest
+      - name: Upload release manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: sahlbiz-release-manifest
+          path: release/manifest.json
