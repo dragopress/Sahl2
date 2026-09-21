@@ -2,7 +2,10 @@
   "name": "sahlbiz",
   "private": true,
   "version": "0.2.0-rc.1",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w @sahlbiz/web",
     "prisma:migrate:reset": "npm run prisma:migrate:reset -w @sahlbiz/database",
@@ -26,9 +29,31 @@
     "ops:restore-objects": "sh scripts/restore-object-storage.sh"
   },
   "dependencies": {
+    "@prisma/composer": "0.20.0",
+    "@prisma/composer-prisma-cloud": "0.20.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "alchemy": "2.0.0-beta.74",
+    "effect": "4.0.0-rc.112",
     "pg": "^8.23.0",
     "postcss": "^8.5.26"
   },
-  "allowScripts": {"prisma": true, "msgpackr-extract": true, "esbuild": true, "@prisma/engines": true, "@prisma/client": true}
+  "allowScripts": {
+    "prisma": true,
+    "msgpackr-extract": true,
+    "esbuild": true,
+    "@prisma/engines": true,
+    "@prisma/client": true
+  },
+  "devDependencies": {
+    "prisma": "8.0.0-rc.15"
+  },
+  "overrides": {
+    "@effect/platform-bun": "4.0.0-rc.112",
+    "@effect/platform-node": "4.0.0-rc.112",
+    "@effect/platform-node-shared": "4.0.0-rc.112",
+    "@effect/sql-d1": "4.0.0-rc.112",
+    "@effect/sql-pg": "4.0.0-rc.112",
+    "@effect/vitest": "4.0.0-rc.112",
+    "effect": "4.0.0-rc.112"
+  }
 }
