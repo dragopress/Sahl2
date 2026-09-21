@@ -240,6 +240,10 @@ jobs:
       - run: npm run build -w @sahlbiz/storage
       - run: npm run build -w @sahlbiz/api
       - run: npm run build -w @sahlbiz/web
+      - name: Validate production Compose configuration
+        run: docker compose -f docker-compose.production.yml config
+      - name: Build production images
+        run: docker compose -f docker-compose.production.yml build --pull
       - run: npm run release:manifest
       - name: Upload release manifest
         uses: actions/upload-artifact@v4
