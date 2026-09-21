@@ -29,11 +29,8 @@ export async function middleware(request:NextRequest){
       const response=NextResponse.next();
       const setCookie=renewed.headers.get('set-cookie');
       if(setCookie)response.headers.set('set-cookie',setCookie);
-      auth=await check(new NextRequest(request.url,{headers:new Headers({...Object.fromEntries(request.headers),cookie:setCookie?.split(';')[0]||request.headers.get('cookie')||''})}));
-      if(auth.ok){
-        response.headers.set('Cache-Control','private, no-store');
-        return response;
-      }
+      response.headers.set('Cache-Control','private, no-store');
+      return response;
     }
     return NextResponse.redirect(new URL('/login',request.url));
   }
