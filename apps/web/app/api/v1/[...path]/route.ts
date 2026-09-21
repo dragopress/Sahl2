@@ -2,19 +2,40 @@ import {NextRequest,NextResponse} from 'next/server';
 
 const API=process.env.API_INTERNAL_URL||process.env.NEXT_PUBLIC_API_URL||'http://127.0.0.1:3001/api/v1';
 
-async function forward(request:NextRequest,params:Promise<{path:string[]}>){
+async function forward(request:NextRequest,params:Promise<{path:string[]}>,cookie?:string){
   const {path}=await params;
-  const target=`${API.replace(/\\/$/,'')}/${path.join('/')}${request.nextUrl.search}`;
+  const target=`${API.replace(/\/$/,'')}/${path.join('/')}${request.nextUrl.search}`;
   const headers=new Headers(request.headers);
   headers.delete('host');
   headers.delete('content-length');
+  if(cookie)headers.set('cookie',cookie);
 
   const body=request.method==='GET'||request.method==='HEAD'?undefined:await request.arrayBuffer();
   return fetch(target,{method:request.method,headers,body,redirect:'manual'});
 }
 
 async function handler(request:NextRequest,{params}:{params:Promise<{path:string[]}>}){
-  const upstream=await forward(request,params);
+  let upstream=await forward(request,params);
+  const {path}=await params;
+  const isAuthRoute=path[0]==='auth';
+
+  if(upstream.status===401&&!isAuthRoute){
+    const refresh=await fetch(`${API.replace(/\/$/,'')}/auth/refresh`,{
+      method:'POST',
+      headers:{cookie:request.headers.get('cookie')||''},
+      cache:'no-store',
+    });
+
+    const setCookie=refresh.headers.get('set-cookie');
+    if(refresh.ok&&setCookie){
+      const cookie=setCookie.split(';',1)[0];
+      upstream=await forward(request,params,cookie);
+      const response=new NextResponse(upstream.body,{status:upstream.status,statusText:upstream.statusText,headers:upstream.headers});
+      response.headers.set('set-cookie',setCookie);
+      return response;
+    }
+  }
+
   return new NextResponse(upstream.body,{status:upstream.status,statusText:upstream.statusText,headers:upstream.headers});
 }
 
