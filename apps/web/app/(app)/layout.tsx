@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import OrgSwitcher from './org-switcher';
 import ThemeSwitcher from '../theme-switcher';
@@ -84,6 +85,14 @@ const groups = [
 ] as const;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
+  async function logout() {
+    await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' });
+    router.push('/login');
+    router.refresh();
+  }
+
   return (
     <div className="min-h-screen flex bg-[var(--bg)] text-[var(--text)] transition-colors duration-200">
       {/* Sidebar */}
@@ -168,13 +177,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="font-semibold text-slate-700 dark:text-slate-200">SahlBiz v0.2</div>
             <div>Maroc · DGI OK</div>
           </div>
-          <Link
-            href="/login"
+          <button
+            type="button"
+            onClick={logout}
             title="Déconnexion"
             className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
           >
             <LogOut size={15} />
-          </Link>
+          </button>
         </div>
       </aside>
 
