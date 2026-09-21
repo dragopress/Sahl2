@@ -2,7 +2,7 @@ import {NextRequest,NextResponse} from 'next/server';
 
 const API=process.env.API_INTERNAL_URL||process.env.NEXT_PUBLIC_API_URL||'http://127.0.0.1:3001/api/v1';
 
-async function forward(request:NextRequest,params:Promise<{path:string[]}>,cookie?:string){
+async function forward(request:NextRequest,params:Promise<{path:string[]}>,body:ArrayBuffer|undefined,cookie?:string){
   const {path}=await params;
   const target=`${API.replace(/\/$/,'')}/${path.join('/')}${request.nextUrl.search}`;
   const headers=new Headers(request.headers);
@@ -10,12 +10,12 @@ async function forward(request:NextRequest,params:Promise<{path:string[]}>,cooki
   headers.delete('content-length');
   if(cookie)headers.set('cookie',cookie);
 
-  const body=request.method==='GET'||request.method==='HEAD'?undefined:await request.arrayBuffer();
   return fetch(target,{method:request.method,headers,body,redirect:'manual'});
 }
 
 async function handler(request:NextRequest,{params}:{params:Promise<{path:string[]}>}){
-  let upstream=await forward(request,params);
+  const body=request.method==='GET'||request.method==='HEAD'?undefined:await request.arrayBuffer();
+  let upstream=await forward(request,params,body);
   const {path}=await params;
   const isAuthRoute=path[0]==='auth';
 
@@ -29,7 +29,7 @@ async function handler(request:NextRequest,{params}:{params:Promise<{path:string
     const setCookie=refresh.headers.get('set-cookie');
     if(refresh.ok&&setCookie){
       const cookie=setCookie.split(';',1)[0];
-      upstream=await forward(request,params,cookie);
+      upstream=await forward(request,params,body,cookie);
       const response=new NextResponse(upstream.body,{status:upstream.status,statusText:upstream.statusText,headers:upstream.headers});
       response.headers.set('set-cookie',setCookie);
       return response;
