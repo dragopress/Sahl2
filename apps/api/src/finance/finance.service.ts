@@ -1,4 +1,5 @@
 import {BadRequestException,Injectable,NotFoundException} from '@nestjs/common';
+import {randomUUID} from 'node:crypto';
 import {Prisma,PrismaClient} from '@prisma/client';
 import {PrismaService} from '../common/prisma.service';
 import {AuditService} from '../common/audit.service';
@@ -9,7 +10,19 @@ export class FinanceService {
  constructor(private readonly prisma:PrismaService,private readonly audit:AuditService){}
  private money(n:number){return Math.round((n+Number.EPSILON)*100)/100}
  private async account(tx:PrismaClient|Prisma.TransactionClient,org:string,code:string){const a=await tx.account.findFirst({where:{organizationId:org,code,active:true}});if(!a)throw new BadRequestException(`Compte ${code} introuvable.`);return a}
- private async nextNumber(tx:PrismaClient|Prisma.TransactionClient,org:string){const year=new Date().getFullYear();const code=`JE-${year}-`;const last=await tx.journalEntry.findFirst({where:{organizationId:org,number:{startsWith:code}},orderBy:{number:'desc'}});const n=last?Number(last.number.slice(-4))+1:1;return `${code}${String(n).padStart(4,'0')}`}
+ private async nextNumber(tx:PrismaClient|Prisma.TransactionClient,org:string){
+  const year=new Date().getFullYear();
+  const rows=await tx.$queryRaw<{value:number}[]>`
+   INSERT INTO "NumberSequence" ("id","organizationId","type","year","nextValue")
+   VALUES (${randomUUID()},${org},'JOURNAL',${year},2)
+   ON CONFLICT ("organizationId","type","year")
+   DO UPDATE SET "nextValue"="NumberSequence"."nextValue"+1
+   RETURNING "nextValue"-1 AS "value"
+  `;
+  const n=Number(rows[0]?.value);
+  if(!Number.isInteger(n)||n<1) throw new Error('Échec de l’allocation du numéro de journal.');
+  return `JE-${year}-${String(n).padStart(4,'0')}`;
+ }
  async seedChart(org:string,userId:string){const defaults=[['101000','Capital','EQUITY'],['411000','Clients','ASSET'],['445710','TVA collectée','LIABILITY'],['512000','Banque','ASSET'],['530000','Caisse','ASSET'],['701000','Ventes de marchandises','REVENUE'],['706000','Prestations de services','REVENUE'],['613000','Achats et charges externes','EXPENSE'],['445660','TVA déductible','ASSET'],['401000','Fournisseurs','LIABILITY']];let created=0;for(const [code,name,type] of defaults){const r=await this.prisma.account.upsert({where:{organizationId_code:{organizationId:org,code}},update:{},create:{organizationId:org,code,name,type:type as any}});if(r.createdAt.getTime()===r.updatedAt.getTime())created++}await this.audit.record({organizationId:org,userId,action:'SEED_CHART',entity:'Account',next:{created}});return this.accounts(org)}
  async accounts(org:string){return this.prisma.account.findMany({where:{organizationId:org},orderBy:{code:'asc'}})}
  async createAccount(org:string,userId:string,dto:CreateAccountDto,request:any){const exists=await this.prisma.account.findFirst({where:{organizationId:org,code:dto.code}});if(exists)throw new BadRequestException('Ce code comptable existe déjà.');const a=await this.prisma.account.create({data:{organizationId:org,code:dto.code,name:dto.name.trim(),type:dto.type,parentId:dto.parentId}});await this.audit.record({organizationId:org,userId,action:'CREATE',entity:'Account',entityId:a.id,next:a,ip:request.ip,userAgent:request.headers['user-agent']});return a}

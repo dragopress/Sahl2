@@ -1,4 +1,5 @@
 import {BadRequestException,Injectable,NotFoundException} from '@nestjs/common';
+import {randomUUID} from 'node:crypto';
 import {Prisma,PrismaClient} from '@prisma/client';
 import {PrismaService} from '../common/prisma.service';
 import {AuditService} from '../common/audit.service';
@@ -18,9 +19,16 @@ export class SalesService{
  }
  private async nextNumber(tx:PrismaClient|Prisma.TransactionClient,organizationId:string,type:'QUOTE'|'INVOICE'){
   const year=new Date().getFullYear();
-  const existing=await tx.numberSequence.findUnique({where:{organizationId_type_year:{organizationId,type,year}}});
-  if(!existing){await tx.numberSequence.create({data:{organizationId,type,year,nextValue:2}});return `${type==='QUOTE'?'DEV':'INV'}-${year}-0001`;}
-  const n=existing.nextValue; await tx.numberSequence.update({where:{id:existing.id},data:{nextValue:{increment:1}}}); return `${type==='QUOTE'?'DEV':'INV'}-${year}-${String(n).padStart(4,'0')}`;
+  const rows=await tx.$queryRaw<{value:number}[]>`
+    INSERT INTO "NumberSequence" ("id","organizationId","type","year","nextValue")
+    VALUES (${randomUUID()},${organizationId},${type},${year},2)
+    ON CONFLICT ("organizationId","type","year")
+    DO UPDATE SET "nextValue"="NumberSequence"."nextValue"+1
+    RETURNING "nextValue"-1 AS "value"
+  `;
+  const n=Number(rows[0]?.value);
+  if(!Number.isInteger(n)||n<1) throw new Error('Échec de l’allocation du numéro.');
+  return `${type==='QUOTE'?'DEV':'INV'}-${year}-${String(n).padStart(4,'0')}`;
  }
  private async productSnapshot(organizationId:string,item:QuoteItemDto){if(!item.productId)return item;const p=await this.prisma.product.findFirst({where:{id:item.productId,organizationId,active:true}});if(!p)throw new BadRequestException('Produit ou service introuvable.');return {...item,description:item.description?.trim()||p.name,unitPrice:item.unitPrice??Number(p.sellingPrice),taxRate:item.taxRate??Number(p.taxRate)};}
  private async customerExists(organizationId:string,id:string){const c=await this.prisma.customer.findFirst({where:{id,organizationId}});if(!c)throw new BadRequestException('Client introuvable dans cette organisation.');return c}
@@ -35,5 +43,27 @@ export class SalesService{
  async sendInvoice(organizationId:string,userId:string,id:string,request:any){const i=await this.invoice(organizationId,id);if(!['DRAFT'].includes(i.status))throw new BadRequestException('Cette facture ne peut pas être envoyée dans son état actuel.');const updated=await this.prisma.$transaction(async tx=>{const posted=await this.inventory.postInvoice(tx,organizationId,id);return tx.invoice.update({where:{id},data:{status:'SENT',issuedAt:i.issuedAt??new Date(),warehouseId:posted.warehouseId,stockPostedAt:posted.stockPostedAt}})});await this.audit.record({organizationId,userId,action:'SEND',entity:'Invoice',entityId:id,previous:i,next:updated,ip:request.ip,userAgent:request.headers['user-agent']});return updated}
  async cancelInvoice(organizationId:string,userId:string,id:string,request:any){const i=await this.invoice(organizationId,id);if(['PAID','CANCELLED'].includes(i.status))throw new BadRequestException('Cette facture ne peut pas être annulée.');const updated=await this.prisma.$transaction(async tx=>{await this.inventory.reverseInvoice(tx,organizationId,id);return tx.invoice.update({where:{id},data:{status:'CANCELLED'}})});await this.audit.record({organizationId,userId,action:'CANCEL',entity:'Invoice',entityId:id,previous:i,next:updated,ip:request.ip,userAgent:request.headers['user-agent']});return updated}
  async payments(organizationId:string){return this.prisma.payment.findMany({where:{organizationId},include:{invoice:{include:{customer:true}}},orderBy:{paidAt:'desc'}})}
- async createPayment(organizationId:string,userId:string,dto:CreatePaymentDto,request:any){const invoice=await this.invoice(organizationId,dto.invoiceId);if(['CANCELLED'].includes(invoice.status))throw new BadRequestException('Impossible d\'enregistrer un paiement sur une facture annulée.');const paid=invoice.payments.reduce((s,p)=>s+Number(p.amount),0);const balance=this.money(Number(invoice.total)-paid);if(dto.amount>balance+0.001)throw new BadRequestException(`Le paiement dépasse le solde restant de ${balance.toFixed(2)} MAD.`);const payment=await this.prisma.$transaction(async tx=>{const p=await tx.payment.create({data:{organizationId,invoiceId:dto.invoiceId,amount:dto.amount,paidAt:dto.paidAt?new Date(dto.paidAt):new Date(),method:dto.method?.trim(),reference:dto.reference?.trim()}});const newPaid=paid+dto.amount;await tx.invoice.update({where:{id:invoice.id},data:{status:newPaid>=Number(invoice.total)-0.001?'PAID':'PARTIALLY_PAID'}});return p});await this.audit.record({organizationId,userId,action:'CREATE',entity:'Payment',entityId:payment.id,next:payment,ip:request.ip,userAgent:request.headers['user-agent']});return payment}
+ async createPayment(organizationId:string,userId:string,dto:CreatePaymentDto,request:any){
+  const payment=await this.prisma.$transaction(async tx=>{
+   // Lock the invoice before calculating the balance. This serializes concurrent payments.
+   const locked=await tx.$queryRaw<{id:string;total:Prisma.Decimal;status:string}[]>`
+    SELECT "id","total","status" FROM "Invoice"
+    WHERE "id"=${dto.invoiceId} AND "organizationId"=${organizationId}
+    FOR UPDATE
+   `;
+   const invoice=locked[0];
+   if(!invoice) throw new NotFoundException('Facture introuvable.');
+   if(invoice.status==='CANCELLED') throw new BadRequestException('Impossible d\'enregistrer un paiement sur une facture annulée.');
+   const aggregate=await tx.payment.aggregate({where:{organizationId,invoiceId:dto.invoiceId},_sum:{amount:true}});
+   const paid=Number(aggregate._sum.amount??0);
+   const balance=this.money(Number(invoice.total)-paid);
+   if(dto.amount>balance+0.001) throw new BadRequestException(`Le paiement dépasse le solde restant de ${balance.toFixed(2)} MAD.`);
+   const p=await tx.payment.create({data:{organizationId,invoiceId:dto.invoiceId,amount:dto.amount,paidAt:dto.paidAt?new Date(dto.paidAt):new Date(),method:dto.method?.trim(),reference:dto.reference?.trim()}});
+   const newPaid=this.money(paid+dto.amount);
+   await tx.invoice.update({where:{id:invoice.id},data:{status:newPaid>=Number(invoice.total)-0.001?'PAID':'PARTIALLY_PAID'}});
+   return p;
+  });
+  await this.audit.record({organizationId,userId,action:'CREATE',entity:'Payment',entityId:payment.id,next:payment,ip:request.ip,userAgent:request.headers['user-agent']});
+  return payment;
+ }
 }

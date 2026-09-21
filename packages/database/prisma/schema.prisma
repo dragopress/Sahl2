@@ -45,6 +45,7 @@ enum QuoteStatus {
 enum NumberSequenceType {
   QUOTE
   INVOICE
+  JOURNAL
 }
 
 enum NotificationType {

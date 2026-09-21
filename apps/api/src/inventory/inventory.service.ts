@@ -1,4 +1,5 @@
 import {BadRequestException,Injectable,NotFoundException} from '@nestjs/common';
+import {randomUUID} from 'node:crypto';
 import {Prisma,PrismaClient} from '@prisma/client';
 import {PrismaService} from '../common/prisma.service';
 import {AuditService} from '../common/audit.service';
@@ -66,10 +67,33 @@ export class InventoryService {
   private async move(tx:Tx,args:{organizationId:string;warehouseId:string;productId:string;delta:number;type:any;sourceType?:string;sourceId?:string;note?:string;occurredAt?:Date}){
     const p=await this.assertProduct(tx,args.organizationId,args.productId);
     await this.assertWarehouse(tx,args.organizationId,args.warehouseId);
-    const current=await tx.warehouseStock.findUnique({where:{warehouseId_productId:{warehouseId:args.warehouseId,productId:args.productId}}});
-    const currentQty=Number(current?.quantity??0), next=currentQty+args.delta;
-    if(next< -0.0005) throw new BadRequestException(`Stock insuffisant pour ${p.name}. Disponible: ${currentQty}.`);
-    await tx.warehouseStock.upsert({where:{warehouseId_productId:{warehouseId:args.warehouseId,productId:args.productId}},create:{warehouseId:args.warehouseId,productId:args.productId,quantity:args.delta},update:{quantity:{increment:args.delta}}});
+    let stock: {quantity:Prisma.Decimal}|undefined;
+    if(args.delta<0){
+      const rows=await tx.$queryRaw<{quantity:Prisma.Decimal}[]>`
+        UPDATE "WarehouseStock"
+        SET "quantity"="quantity"+${args.delta}
+        WHERE "warehouseId"=${args.warehouseId}
+          AND "productId"=${args.productId}
+          AND "quantity"+${args.delta}>=0
+        RETURNING "quantity"
+      `;
+      stock=rows[0];
+      if(!stock){
+        const current=await tx.warehouseStock.findUnique({where:{warehouseId_productId:{warehouseId:args.warehouseId,productId:args.productId}},select:{quantity:true}});
+        const currentQty=Number(current?.quantity??0);
+        throw new BadRequestException(`Stock insuffisant pour ${p.name}. Disponible: ${currentQty}.`);
+      }
+    } else {
+      const rows=await tx.$queryRaw<{quantity:Prisma.Decimal}[]>`
+        INSERT INTO "WarehouseStock" ("id","warehouseId","productId","quantity")
+        VALUES (${randomUUID()},${args.warehouseId},${args.productId},${args.delta})
+        ON CONFLICT ("warehouseId","productId")
+        DO UPDATE SET "quantity"="WarehouseStock"."quantity"+EXCLUDED."quantity"
+        RETURNING "quantity"
+      `;
+      stock=rows[0];
+    }
+    if(!stock) throw new Error('Échec de la mise à jour du stock.');
     await tx.product.update({where:{id:p.id},data:{stock:{increment:args.delta}}});
     return tx.stockMovement.create({data:{organizationId:args.organizationId,warehouseId:args.warehouseId,productId:args.productId,quantity:Math.abs(args.delta),type:args.type,sourceType:args.sourceType,sourceId:args.sourceId,note:args.note,occurredAt:args.occurredAt??new Date()}});
   }
