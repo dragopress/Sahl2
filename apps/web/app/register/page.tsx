@@ -31,6 +31,11 @@ export default function Register() {
         setError('Impossible de créer le compte. Vérifiez vos informations.');
         return;
       }
+      const data = await r.json();
+      if (data.requiresEmailConfirmation) {
+        setError('Compte créé. Vérifiez votre email Supabase avant de vous connecter.');
+        return;
+      }
       router.push('/dashboard');
     } catch {
       setError('Erreur de connexion au serveur.');
