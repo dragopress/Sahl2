@@ -14,7 +14,7 @@ export class FinanceService {
   const year=new Date().getFullYear();
   const rows=await tx.$queryRaw<{value:number}[]>`
    INSERT INTO "NumberSequence" ("id","organizationId","type","year","nextValue")
-   VALUES (${randomUUID()},${org},'JOURNAL',${year},2)
+   VALUES (${randomUUID()},${org},'JOURNAL'::"NumberSequenceType",${year},2)
    ON CONFLICT ("organizationId","type","year")
    DO UPDATE SET "nextValue"="NumberSequence"."nextValue"+1
    RETURNING "nextValue"-1 AS "value"
