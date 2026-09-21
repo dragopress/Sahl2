@@ -13,3 +13,5 @@ packages/database/.env
 
 # TypeScript build cache
 *.tsbuildinfo
+.prisma-composer/
+.alchemy/
