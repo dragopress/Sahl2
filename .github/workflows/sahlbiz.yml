@@ -83,14 +83,14 @@ jobs:
             --from-url "$DATABASE_URL" \
             --to-schema-datamodel prisma/schema.prisma \
             --exit-code
+      - name: Build storage
+        run: npm run build -w @sahlbiz/storage
       - name: Typecheck API
         run: npm run typecheck -w @sahlbiz/api
       - name: Typecheck web
         run: npm run typecheck -w @sahlbiz/web
       - name: Unit tests
         run: npm test
-      - name: Build storage
-        run: npm run build -w @sahlbiz/storage
       - name: Build API
         run: npm run build -w @sahlbiz/api
       - name: Build web
