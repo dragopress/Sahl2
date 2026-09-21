@@ -62,6 +62,26 @@ test('critical business workflows and tenant isolation', async () => {
   const a = await register('A');
   const b = await register('B');
 
+  const health = await request('/health/live');
+  assert.equal(health.response.status, 200);
+  assert.equal(health.response.headers.get('x-content-type-options'), 'nosniff');
+  assert.equal(health.response.headers.get('x-frame-options'), 'DENY');
+  assert.equal(health.response.headers.get('referrer-policy'), 'strict-origin-when-cross-origin');
+  assert.equal(health.response.headers.get('permissions-policy'), 'camera=(), microphone=(), geolocation=()');
+  assert.equal(health.response.headers.get('cache-control'), 'no-store');
+
+  await expectStatus('/customers', 401, {method: 'GET'});
+  await expectStatus('/customers', 403, {
+    method: 'POST',
+    headers: {origin: 'https://attacker.example'},
+    body: JSON.stringify({name: 'blocked'}),
+  }, a.cookie);
+  await expectStatus('/customers', 403, {
+    method: 'POST',
+    headers: {'sec-fetch-site': 'cross-site'},
+    body: JSON.stringify({name: 'blocked'}),
+  }, a.cookie);
+
   await get('/auth/me', a.cookie);
   await get('/auth/me', b.cookie);
   await expectStatus('/customers', 403, {method: 'GET', headers: {'x-organization-id': b.organizationId}}, a.cookie);
