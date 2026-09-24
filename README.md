@@ -1102,3 +1102,41 @@ The platform has progressed from a feature prototype into a broad multi-tenant b
 The remaining work is primarily **runtime verification and release engineering**, not another major business-domain feature.
 
 SahlBiz should only be promoted to production after the CI/staging environment successfully executes the complete build, migration, E2E, security, backup/restore, and deployment checks described above.
+
+
+---
+
+## Release-readiness audit — 2026-09-24
+
+This repository documentation is reconciled against the current `main` implementation. **0.2.0-rc.1 is not approved for production release yet.**
+
+### Verified green
+- Latest SahlBiz CI/CD validation on `main` passes repository validation, Prisma generation/migration checks, API/web typechecks, unit tests, API build, web build, API startup, authenticated E2E, and production Prisma migration deployment.
+- Authentication, tenant context, RBAC, audit logging, inventory ledger, accounting invariants, documents permissions, search scoping, notifications/automation and deterministic AI are implemented server-side.
+
+### Release blockers found in the repository
+1. Production storage configuration uses `STORAGE_*` variables while the storage package consumes `S3_*`. These must be normalized before production.
+2. The web application still contains an in-memory/demo API route and hardcoded business data. Production must never silently use that route or present demo financial values as live data.
+3. The dashboard and several Finance/VAT/POS/Purchasing/Opportunities surfaces still contain hardcoded/prototype behavior and must be connected to the real tenant-scoped API.
+4. The web build configuration currently permits TypeScript/ESLint build errors; the release gate must not suppress these errors.
+5. AI frontend organization/API URL handling is inconsistent with the rest of the web application and must use one canonical API/organization context.
+6. Compliance language such as DGI conformity/SIMPL-TVA must not be presented as completed functionality until the corresponding implementation and validation evidence exists.
+7. Release/deployment documentation contains stale migration counts/names and must match the actual migration history.
+8. `release/manifest.json` must be regenerated whenever release inputs change.
+
+### Product features explicitly not yet production-complete
+PDF rendering, email delivery/reminders, credit notes, recurring invoices, configurable tax rules, payment-provider integrations, CSV/OFX bank adapters, country-specific Moroccan VAT filing/export formats, and full production infrastructure/recovery drills remain release work unless separately evidenced.
+
+### Architecture rule
+The production path is strictly:
+
+```
+Browser → Next.js → NestJS API → Prisma → PostgreSQL
+                           ↘ Redis/BullMQ
+                           ↘ S3-compatible storage
+```
+
+Demo/in-memory data must never be a fallback for production business operations.
+
+### Release decision
+**NO-GO for production until the blockers above are resolved and the environment-dependent validation checklist passes.** This is a factual engineering release status, not a product-quality ranking.
