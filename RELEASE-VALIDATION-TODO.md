@@ -775,3 +775,35 @@ All must be true:
 [ ] Technical sign-off
 [ ] GO decision recorded
 ```
+
+
+---
+
+## Audit reconciliation — 2026-09-24
+
+This checklist is the authoritative release gate after the repository-wide review.
+
+### Newly mandatory blockers
+- [ ] Normalize storage configuration: choose one canonical `S3_*`/storage vocabulary and update package, Compose, examples and backup scripts consistently.
+- [ ] Remove or hard-disable the in-memory/demo Next.js API from production.
+- [ ] Replace hardcoded dashboard/finance/VAT/POS/purchasing/opportunities data with real authenticated API flows.
+- [ ] Remove Next.js `ignoreBuildErrors` and `ignoreDuringBuilds` release bypasses.
+- [ ] Normalize frontend API URL and organization-context handling.
+- [ ] Reconcile all compliance claims with implemented/validated functionality.
+- [ ] Reconcile migration names/counts in deployment/status documentation with the actual Prisma migration tree.
+- [ ] Regenerate and verify `release/manifest.json` for the final release commit.
+- [ ] Make root `typecheck`/build commands accurately represent the full monorepo quality gate.
+- [ ] Perform dependency ownership/lockfile audit and remove unused direct dependencies.
+
+### Current known migration state
+The current repository contains two migration directories:
+- `00000000000000_init`
+- `20260921190000_atomic_number_sequences`
+
+Any document claiming a different count or naming scheme must be corrected before release.
+
+### Current CI evidence
+Latest `SahlBiz CI/CD` runs on `main` are green, including authenticated E2E and production Prisma migration deployment. This does **not** close the environment-dependent production gates in this checklist.
+
+### Final release rule
+A green CI run is necessary but not sufficient. Production approval requires the application to use real backend data, consistent storage configuration, accurate compliance/documentation claims, successful Docker/staging/recovery validation, and explicit evidence for every unchecked gate above.
