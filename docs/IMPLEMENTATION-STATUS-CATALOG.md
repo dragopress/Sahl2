@@ -1,38 +1,29 @@
-# SahlBiz — Catalog implementation slice
+# SahlBiz — Catalog implementation status
 
-Implemented in this slice:
+## Delivered
 
 - Multi-tenant products/services catalog.
 - Product/service categories.
 - SKU and barcode fields.
-- Purchase and selling prices in MAD.
+- Purchase/selling prices in MAD.
 - Configurable VAT rate and unit.
-- Stock and minimum-stock fields for products.
-- Supplier text field.
-- Active/inactive lifecycle with archive action.
+- Product stock/minimum-stock fields.
+- Active/inactive lifecycle and archive action.
 - Search by name/SKU/barcode.
 - Low-stock API endpoint.
 - Audit logging for catalog mutations.
 - RBAC permissions: `products:read`, `products:write`.
-- Quote and invoice lines can reference a catalog item while retaining a price/description snapshot.
+- Quote/invoice line snapshots.
 - French catalog UI under `/products`.
 
-Intentional boundary: stock quantities are visible and low-stock detection is available, but stock changes are not yet implemented as direct mutations. The next inventory slice should introduce warehouses and immutable stock movements so stock cannot change without an auditable reason.
+## Inventory boundary is now implemented
 
+The earlier catalog-slice note that stock mutations were a future slice is obsolete. The current repository contains warehouses, warehouse balances and immutable stock movements. Product stock is an aggregate/cache and is not a direct editing surface.
 
----
+Stock changes now flow through the inventory movement system and are covered by acceptance tests including tenant isolation, negative-stock prevention, transfer atomicity and sales integration.
 
-## Repository-wide audit reconciliation — 2026-09-24
+## Release caveat
 
-### Release status
-This slice is **not, by itself, evidence of full production readiness**. The current repository audit found unfinished frontend integration and infrastructure/documentation inconsistencies outside the individual backend slice.
+The backend catalog/inventory implementation must not be confused with the frontend demo API. Production screens must use the authenticated NestJS API and PostgreSQL data only.
 
-### Mandatory release blockers relevant to this slice
-- Real production UI/API integration must replace any demo or hardcoded business data for this domain.
-- Tenant authorization must remain server-side; client organization identifiers are selectors only and never authorization.
-- Production storage configuration must use one canonical variable vocabulary; current package/Compose/backup configuration is inconsistent.
-- Release documentation and migration references must match the actual repository state.
-- Production claims must be limited to functionality that is implemented and validated.
-
-### Verification evidence
-Latest SahlBiz CI/CD validation on `main` is green, including authenticated E2E and Prisma migration deployment. Environment-dependent staging, Docker, backup/restore and production checks remain separate release gates.
+Storage configuration, build-error suppression, frontend integration, compliance claims and environment-dependent release validation remain repository-level release gates.
