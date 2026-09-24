@@ -10,6 +10,10 @@
     "prisma:migrate:reset": "prisma migrate reset --schema=prisma/schema.prisma",
     "prisma:migrate:fresh": "node scripts/create-fresh-migration.mjs"
   },
-  "dependencies": {"@prisma/client": "^6.15.0", "prisma": "^6.15.0"},
-  "devDependencies": {"tsx": "^4.19.0"}
+  "dependencies": {
+    "@prisma/client": "6.19.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0"
+  }
 }
