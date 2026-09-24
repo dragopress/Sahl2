@@ -40,3 +40,23 @@ Added an executable authenticated end-to-end suite covering:
 - logout/session invalidation
 
 Run against a live API with `E2E_BASE_URL` (defaults to `http://127.0.0.1:3001/api/v1`) using `npm run e2e`.
+
+
+---
+
+## Repository-wide audit reconciliation — 2026-09-24
+
+Latest SahlBiz CI/CD validation on `main` is green, including repository validation, Prisma generation/migration checks, API/web typechecks, unit tests, API/web builds, API startup/health, authenticated E2E and production Prisma migration deployment.
+
+CI nevertheless does not close these release blockers:
+
+- [ ] Normalize `S3_*` versus `STORAGE_*` configuration across storage, Compose, environment examples and backup scripts.
+- [ ] Remove/hard-disable the in-memory/demo web API from production.
+- [ ] Replace hardcoded/prototype dashboard, finance/VAT and other business screens with real API-backed flows.
+- [ ] Remove Next.js TypeScript/ESLint build-error suppression.
+- [ ] Normalize frontend API URL and organization-context handling.
+- [ ] Reconcile regulatory/compliance claims with implemented and validated functionality.
+- [ ] Reconcile deployment documentation with the actual two-migration tree.
+- [ ] Complete Docker, staging, backup/restore, rollback and production smoke validation.
+
+A green CI run is therefore a necessary quality gate, not a production approval by itself.
