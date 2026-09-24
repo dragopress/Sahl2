@@ -2,6 +2,10 @@
   "name": "sahlbiz",
   "private": true,
   "version": "0.2.0-rc.1",
+  "engines": {
+    "node": ">=22.18.0 <23",
+    "npm": "10.9.9"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -38,14 +42,14 @@
     "postcss": "^8.5.26"
   },
   "allowScripts": {
-    "prisma": true,
     "msgpackr-extract": true,
     "esbuild": true,
+    "prisma": true,
     "@prisma/engines": true,
     "@prisma/client": true
   },
   "devDependencies": {
-    "prisma": "8.0.0-rc.15"
+    "prisma": "6.19.3"
   },
   "overrides": {
     "@effect/platform-bun": "4.0.0-rc.112",
@@ -53,7 +57,6 @@
     "@effect/platform-node-shared": "4.0.0-rc.112",
     "@effect/sql-d1": "4.0.0-rc.112",
     "@effect/sql-pg": "4.0.0-rc.112",
-    "@effect/vitest": "4.0.0-rc.112",
-    "effect": "4.0.0-rc.112"
+    "@effect/vitest": "4.0.0-rc.112"
   }
 }
