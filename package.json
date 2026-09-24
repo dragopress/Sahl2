@@ -48,9 +48,7 @@
     "@prisma/engines": true,
     "@prisma/client": true
   },
-  "devDependencies": {
-    "prisma": "6.19.3"
-  },
+  "devDependencies": {},
   "overrides": {
     "@effect/platform-bun": "4.0.0-rc.112",
     "@effect/platform-node": "4.0.0-rc.112",
