@@ -26,10 +26,12 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Pin npm
         run: npm install --global npm@10.9.9
+      - name: Remove local Prisma 6 CLI for Composer deploy
+        run: rm -f node_modules/.bin/prisma
       - uses: prisma/cloud-deploy-action@v1
         with:
           module: module.mjs
-          install-command: npm ci --omit=dev --no-audit --no-fund
+          install-command: npm ci --no-audit --no-fund
           build-command: bun run build
           # Keep Prisma 8 isolated to the Composer deploy CLI. The application
           # database workspace owns Prisma 6.19.3 for ORM/client generation,
