@@ -26,6 +26,10 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Pin npm
         run: npm install --global npm@10.9.9
+      - name: Regenerate Bun lockfile for deploy validation
+        run: |
+          bun install --lockfile-only
+          git diff --unified=0 -- bun.lock
       - uses: prisma/cloud-deploy-action@v1
         with:
           module: module.mjs
