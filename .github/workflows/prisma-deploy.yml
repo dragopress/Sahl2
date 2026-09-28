@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
   pull-requests: write
 
@@ -26,20 +26,12 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Pin npm
         run: npm install --global npm@10.9.9
-      - name: Regenerate and persist Bun lockfile
-        run: |
-          bun install --lockfile-only
-          if ! git diff --quiet -- bun.lock; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add bun.lock
-            git commit -m "fix(ci): regenerate Bun lockfile"
-            git push
-          fi
       - uses: prisma/cloud-deploy-action@v1
         with:
           module: module.mjs
+          install-command: npm ci --omit=dev --no-audit --no-fund
           build-command: bun run build
           # Keep Prisma 8 isolated to the Composer deploy CLI. The application
-          # database workspace owns Prisma 6.19.3 for ORM/client generation.
+          # database workspace owns Prisma 6.19.3 for ORM/client generation,
+          # so production-only installation intentionally excludes that local CLI.
           prisma-version: 8.0.0-rc.15
