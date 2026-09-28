@@ -40,7 +40,7 @@ for (const name of migrations) {
 }
 
 const env = fs.readFileSync(path.join(root, '.env.production.example'), 'utf8');
-for (const secret of ['POSTGRES_PASSWORD','REDIS_PASSWORD','SESSION_SECRET','MINIO_ROOT_PASSWORD','STORAGE_SECRET_KEY']) {
+for (const secret of ['POSTGRES_PASSWORD','REDIS_PASSWORD','SESSION_SECRET','MINIO_ROOT_PASSWORD','S3_SECRET_ACCESS_KEY']) {
   const line = env.split(/\r?\n/).find(x=>x.startsWith(`${secret}=`));
   if (!line || /CHANGE_ME|replace|example/i.test(line.split('=')[1] ?? '')) {
     // Templates intentionally contain placeholders; fail only if a real-looking short secret is committed.
