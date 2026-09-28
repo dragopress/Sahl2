@@ -50,7 +50,7 @@ Latest SahlBiz CI/CD validation on `main` is green, including repository validat
 
 CI nevertheless does not close these release blockers:
 
-- [ ] Normalize `S3_*` versus `STORAGE_*` configuration across storage, Compose, environment examples and backup scripts.
+- [x] Normalize object-storage configuration on the canonical `S3_*` contract across storage, Compose, environment examples and backup scripts.
 - [ ] Remove/hard-disable the in-memory/demo web API from production.
 - [ ] Replace hardcoded/prototype dashboard, finance/VAT and other business screens with real API-backed flows.
 - [ ] Remove Next.js TypeScript/ESLint build-error suppression.
