@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "npm run dev -w @sahlbiz/web",
     "prisma:migrate:reset": "npm run prisma:migrate:reset -w @sahlbiz/database",
-    "build": "bun run --filter @sahlbiz/web build",
+    "build": "bun run --sequential --filter @sahlbiz/api --filter @sahlbiz/web build",
     "lint": "npm run lint -w @sahlbiz/web",
     "db:generate": "npm run prisma:generate -w @sahlbiz/database",
     "db:migrate": "npm run prisma:migrate -w @sahlbiz/database",
