@@ -29,7 +29,7 @@ This is CI evidence only; it does not replace staging, Docker, backup/restore, s
 
 ## Release blockers from 2026-09-24 audit
 
-- [ ] Normalize storage configuration: the storage package consumes `S3_*` while production Compose/backup scripts use `STORAGE_*`.
+- [x] Normalize storage configuration on the canonical `S3_*` contract across the storage package, production Compose, environment templates and backup/restore scripts.
 - [ ] Remove or hard-disable the in-memory/demo Next.js API from production.
 - [ ] Replace hardcoded dashboard, Finance/VAT and other prototype business data with real authenticated API flows.
 - [ ] Remove Next.js build-error suppression.
