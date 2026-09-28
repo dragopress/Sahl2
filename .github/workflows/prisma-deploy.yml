@@ -29,7 +29,7 @@ jobs:
       - uses: prisma/cloud-deploy-action@v1
         with:
           module: module.mjs
-          install-command: npm ci --no-audit --no-fund && rm -f node_modules/.bin/prisma
+          install-command: npm ci --no-audit --no-fund && npx prisma generate --schema=packages/database/prisma/schema.prisma && rm -f node_modules/.bin/prisma
           build-command: bun run build
           # Keep Prisma 8 isolated to the Composer deploy CLI. The application
           # database workspace owns Prisma 6.19.3 for ORM/client generation,
