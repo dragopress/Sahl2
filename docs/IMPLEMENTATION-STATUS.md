@@ -36,7 +36,7 @@ Latest SahlBiz CI/CD on `main` passes repository validation, Prisma generation/m
 
 ## Remaining release blockers
 
-- Production storage configuration uses inconsistent `S3_*` versus `STORAGE_*` variable names.
+- Production object-storage configuration is standardized on the canonical `S3_*` variable names.
 - Frontend still contains an in-memory/demo API and hardcoded/prototype business screens; these must not be used as production data paths.
 - Next.js build configuration suppresses TypeScript/ESLint build failures and must be hardened.
 - Frontend API/organization context must be normalized.
