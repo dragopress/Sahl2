@@ -12,6 +12,13 @@ export class CustomerService{
   return {data,meta:{total,page,pageSize,pages:Math.ceil(total/pageSize)}};
  }
  async get(organizationId:string,id:string){const customer=await this.prisma.customer.findFirst({where:{id,organizationId}});if(!customer)throw new NotFoundException('Customer not found');return customer}
+ async creditBalances(organizationId:string){
+  const invoices=await this.prisma.invoice.findMany({where:{organizationId,status:{not:'CANCELLED'}},include:{customer:true,payments:true},orderBy:{issuedAt:'desc'}});
+  const byCustomer=new Map<string,{customerId:string;customer:string;invoiced:number;paid:number;balance:number;overdue:number}>();
+  for(const invoice of invoices){const paid=invoice.payments.reduce((s,p)=>s+Number(p.amount),0);const total=Number(invoice.total);const balance=Math.max(0,total-paid);if(balance<=0)continue;const key=invoice.customerId;const row=byCustomer.get(key)||{customerId:key,customer:invoice.customer.name,invoiced:0,paid:0,balance:0,overdue:0};row.invoiced+=total;row.paid+=paid;row.balance+=balance;if(invoice.dueAt&&invoice.dueAt<new Date())row.overdue+=balance;byCustomer.set(key,row)}
+  return [...byCustomer.values()].map(x=>({...x,invoiced:Number(x.invoiced.toFixed(2)),paid:Number(x.paid.toFixed(2)),balance:Number(x.balance.toFixed(2)),overdue:Number(x.overdue.toFixed(2))})).sort((a,b)=>b.balance-a.balance);
+ }
+
  async create(organizationId:string,userId:string,dto:CreateCustomerDto,request:any){
   const name=dto.name.trim(); if(!name)throw new BadRequestException('Customer name is required');
   const customer=await this.prisma.customer.create({data:{organizationId,type:dto.type??'COMPANY',name,email:dto.email?.trim().toLowerCase(),phone:dto.phone?.trim(),ice:dto.ice?.trim()}});
