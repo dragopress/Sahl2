@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId} from '../../../lib/api-client';
 import Link from 'next/link';
 import {useEffect,useMemo,useState} from 'react';
 import {ArrowRight,Building2,CheckSquare,FileText,Package,Receipt,Search as SearchIcon,Users,Wallet,BriefcaseBusiness,Warehouse as WarehouseIcon} from 'lucide-react';
