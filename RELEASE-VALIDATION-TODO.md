@@ -784,11 +784,11 @@ All must be true:
 This checklist is the authoritative release gate after the repository-wide review.
 
 ### Newly mandatory blockers
-- [ ] Normalize storage configuration: choose one canonical `S3_*`/storage vocabulary and update package, Compose, examples and backup scripts consistently.
-- [ ] Remove or hard-disable the in-memory/demo Next.js API from production.
-- [ ] Replace hardcoded dashboard/finance/VAT/POS/purchasing/opportunities data with real authenticated API flows.
+- [x] Normalize storage configuration on the canonical `S3_*` vocabulary.
+- [x] Remove or hard-disable the in-memory/demo Next.js API from production.
+- [x] Replace hardcoded dashboard/finance/VAT/POS/purchasing/opportunities data with real authenticated API flows where backend APIs are available; unsupported compliance/exports remain explicitly labeled.
 - [ ] Remove Next.js `ignoreBuildErrors` and `ignoreDuringBuilds` release bypasses.
-- [ ] Normalize frontend API URL and organization-context handling.
+- [x] Normalize frontend API URL and organization-context handling.
 - [ ] Reconcile all compliance claims with implemented/validated functionality.
 - [ ] Reconcile migration names/counts in deployment/status documentation with the actual Prisma migration tree.
 - [ ] Regenerate and verify `release/manifest.json` for the final release commit.
