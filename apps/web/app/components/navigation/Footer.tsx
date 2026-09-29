@@ -28,7 +28,7 @@ export default function Footer() {
                 <ShieldCheck size={18} />
               </div>
               <div>
-                <span className="font-semibold text-white block">Conforme DGI & CGI</span>
+                <span className="font-semibold text-white block">Fonctionnalités fiscales marocaines</span>
                 <span className="text-slate-400 text-[11px]">
                   Articles 89–100 (TVA) et Art. 193 (Plafond espèces 5 000 MAD)
                 </span>
@@ -42,7 +42,7 @@ export default function Footer() {
               <div>
                 <span className="font-semibold text-white block">Normes PCGM & SIMPL</span>
                 <span className="text-slate-400 text-[11px]">
-                  Plan Comptable Général Marocain (Classes 1 à 7) & Export SIMPL-TVA
+                  Plan Comptable Général Marocain & fonctionnalités d’export fiscal
                 </span>
               </div>
             </div>
@@ -82,7 +82,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              SahlBiz centralise la facturation légale, la caisse tactile POS, le recouvrement Kreddy, la gestion des achats et la comptabilité marocaine au sein d&apos;une plateforme unifiée 100% conforme à la législation fiscale en vigueur.
+              SahlBiz centralise la facturation légale, la caisse tactile POS, le recouvrement Kreddy, la gestion des achats et la comptabilité marocaine au sein d&apos;une plateforme unifiée conçue pour les besoins de gestion fiscale au Maroc.
             </p>
 
             <div className="pt-2 space-y-2 text-xs text-slate-400">
@@ -178,7 +178,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/finance/vat" className="hover:text-emerald-400 transition-colors">
-                  Télédéclaration SIMPL-TVA
+                  Export fiscal
                 </Link>
               </li>
               <li>
