@@ -177,6 +177,7 @@ test('critical business workflows and tenant isolation', async () => {
   assert.equal(bOpportunities.some((x: any) => x.id === opportunity.id), false, 'tenant B must not see tenant A opportunities');
 
   const creditQuote = await post('/quotes', {customerId, items: [{productId, description: product.name, quantity: 1, unitPrice: 100, taxRate: 20}]}, a.cookie);
+  await post(`/quotes/${creditQuote.id}/send`, {}, a.cookie);
   const creditInvoice = await post(`/quotes/${creditQuote.id}/convert`, {}, a.cookie);
   await post(`/invoices/${creditInvoice.id}/send`, {}, a.cookie);
   const creditBalances = await get('/customers/credit/balances', a.cookie);
