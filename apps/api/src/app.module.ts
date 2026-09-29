@@ -19,7 +19,8 @@ import {ProjectsModule} from './projects/projects.module';
 import {AnalyticsModule} from './analytics/analytics.module';
 import {AutomationModule} from './automation/automation.module';import {DocumentsModule} from './documents/documents.module';
 import {AiModule} from './ai/ai.module';
+import {OpportunitiesModule} from './opportunities/opportunities.module';
 import {RateLimitGuard} from './common/rate-limit.guard';
 import {CsrfGuard} from './common/csrf.guard';
 import {SearchModule} from './search/search.module';
-@Module({imports:[CommonModule,AuthModule,FinanceModule,SuppliersModule,ExpensesModule,ProjectsModule,AnalyticsModule,AutomationModule,DocumentsModule,SearchModule,AiModule],controllers:[HealthController,CustomersController,SalesController,ProductsController,InventoryController],providers:[CustomerService,SalesService,ProductsService,InventoryService,Reflector,RbacGuard,{provide:APP_GUARD,useClass:RateLimitGuard},{provide:APP_GUARD,useClass:CsrfGuard}]}) export class AppModule{}
+@Module({imports:[CommonModule,AuthModule,FinanceModule,SuppliersModule,ExpensesModule,ProjectsModule,AnalyticsModule,AutomationModule,DocumentsModule,SearchModule,AiModule,OpportunitiesModule],controllers:[HealthController,CustomersController,SalesController,ProductsController,InventoryController],providers:[CustomerService,SalesService,ProductsService,InventoryService,Reflector,RbacGuard,{provide:APP_GUARD,useClass:RateLimitGuard},{provide:APP_GUARD,useClass:CsrfGuard}]}) export class AppModule{}
