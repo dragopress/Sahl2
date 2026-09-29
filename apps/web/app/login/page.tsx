@@ -8,8 +8,8 @@ import ThemeSwitcher from '../theme-switcher';
 const API = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export default function Login() {
-  const [email, setEmail] = useState('demo@sahlbiz.ma');
-  const [password, setPassword] = useState('password123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
