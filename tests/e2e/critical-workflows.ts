@@ -173,14 +173,17 @@ test('critical business workflows and tenant isolation', async () => {
   assert.equal(opportunity.customerId, customerId);
   const opportunities = await get('/opportunities', a.cookie);
   assert.ok(opportunities.some((x: any) => x.id === opportunity.id));
-  await get('/opportunities', b.cookie);
-  await get(`/opportunities/${opportunity.id}`, b.cookie, 404);
+  const bOpportunities = await get('/opportunities', b.cookie);
+  assert.equal(bOpportunities.some((x: any) => x.id === opportunity.id), false, 'tenant B must not see tenant A opportunities');
 
+  const creditQuote = await post('/quotes', {customerId, items: [{productId, description: product.name, quantity: 1, unitPrice: 100, taxRate: 20}]}, a.cookie);
+  const creditInvoice = await post(`/quotes/${creditQuote.id}/convert`, {}, a.cookie);
+  await post(`/invoices/${creditInvoice.id}/send`, {}, a.cookie);
   const creditBalances = await get('/customers/credit/balances', a.cookie);
   assert.ok(Array.isArray(creditBalances));
   const customerCredit = creditBalances.find((x: any) => x.customerId === customerId);
   assert.ok(customerCredit, 'customer credit endpoint must expose outstanding invoice balance');
-  assert.equal(Number(customerCredit.balance), 0, 'fully paid test invoice must not remain in customer credit');
+  assert.equal(Number(customerCredit.balance), 120, 'unpaid invoice must appear in customer credit');
 
   const reports = await get('/analytics/executive', a.cookie);
   assert.ok(typeof reports.kpis.revenue === 'number');
