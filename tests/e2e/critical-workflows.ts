@@ -169,6 +169,19 @@ test('critical business workflows and tenant isolation', async () => {
   const paidExpense = await post(`/expenses/${expense.id}/pay`, {cashAccountId: cash.id, paidAt: new Date().toISOString()}, a.cookie);
   assert.equal(paidExpense.status, 'PAID');
 
+  const opportunity = await post('/opportunities', {title: `E2E Opportunity ${suffix}`, customerId, value: 1000, probability: 50, stage: 'PROPOSAL'}, a.cookie);
+  assert.equal(opportunity.customerId, customerId);
+  const opportunities = await get('/opportunities', a.cookie);
+  assert.ok(opportunities.some((x: any) => x.id === opportunity.id));
+  await get('/opportunities', b.cookie);
+  await get(`/opportunities/${opportunity.id}`, b.cookie, 404);
+
+  const creditBalances = await get('/customers/credit/balances', a.cookie);
+  assert.ok(Array.isArray(creditBalances));
+  const customerCredit = creditBalances.find((x: any) => x.customerId === customerId);
+  assert.ok(customerCredit, 'customer credit endpoint must expose outstanding invoice balance');
+  assert.equal(Number(customerCredit.balance), 0, 'fully paid test invoice must not remain in customer credit');
+
   const reports = await get('/analytics/executive', a.cookie);
   assert.ok(typeof reports.kpis.revenue === 'number');
   const profitability = await get('/projects/profitability', a.cookie);
