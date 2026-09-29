@@ -55,7 +55,7 @@ export default function Navbar() {
     },
     {
       title: 'Comptabilité PCGM & Bilan',
-      desc: 'Plan comptable marocain, Bilan, CPC et télédéclaration SIMPL-TVA.',
+      desc: 'Plan comptable marocain, Bilan, CPC et exports fiscaux.',
       href: '/finance',
       icon: <FileSpreadsheet className="text-purple-600 dark:text-purple-400" size={18} />,
     },
