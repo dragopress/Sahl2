@@ -39,7 +39,7 @@ export async function apiFetch(
     headers.set('content-type', 'application/json');
   }
 
-  return fetch(\`${API_BASE}\${path}\`, {
+  return fetch(`${API_BASE}${path}`, {
     ...init,
     credentials: init.credentials ?? 'include',
     headers,
