@@ -1,10 +1,10 @@
 'use client';
 
+import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
 import {useEffect,useState} from 'react';
 import {ArrowDownRight,ArrowUpRight,MoreHorizontal,RefreshCw,AlertCircle,CheckCircle2,Clock3} from 'lucide-react';
 import {BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,CartesianGrid} from 'recharts';
 
-const API=process.env.NEXT_PUBLIC_API_URL||'/api/v1';
 type Executive={kpis:{revenue:number;receivables:number;expenses:number;payments:number;profit:number;stockValue:number}};
 type Sales={topCustomers:{name:string;value:number}[];quoteCount:number;acceptedQuotes:number};
 type Operations={supplierCount:number;openTasks:number;lowStock:{name:string;stock:number;minimum:number}[]};
@@ -17,13 +17,13 @@ export default function Dashboard(){
  const [error,setError]=useState('');
  async function load(){
   setLoading(true);setError('');
-  const org=localStorage.getItem('sahlbiz_org')||'';
+  const org=getOrganizationId()||'';
   const headers={'x-organization-id':org};
   try{
    const [a,b,c]=await Promise.all([
-    fetch(`${API}/analytics/executive`,{credentials:'include',headers}),
-    fetch(`${API}/analytics/sales`,{credentials:'include',headers}),
-    fetch(`${API}/analytics/operations`,{credentials:'include',headers}),
+    apiFetch(`/analytics/executive`,{credentials:'include',headers}),
+    apiFetch(`/analytics/sales`,{credentials:'include',headers}),
+    apiFetch(`/analytics/operations`,{credentials:'include',headers}),
    ]);
    if([a,b,c].some(r=>r.status===401||r.status===403)) throw new Error('Votre session ou votre organisation n’est plus autorisée.');
    if(!a.ok||!b.ok||!c.ok) throw new Error('Impossible de charger les données du tableau de bord.');
