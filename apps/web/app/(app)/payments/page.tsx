@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId} from '../../../lib/api-client';
 import {useEffect,useState} from 'react';import {Wallet} from 'lucide-react';
 type Org={id:string;name:string;role:string};
 export default function Payments(){const [orgs,setOrgs]=useState<Org[]>([]),[org,setOrg]=useState(''),[rows,setRows]=useState<any[]>([]),[loading,setLoading]=useState(true);
