@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId} from '../../../lib/api-client';
 import {useEffect,useState} from 'react';
 import {BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,LineChart,Line} from 'recharts';
 const money=(n:number)=>new Intl.NumberFormat('fr-MA',{style:'currency',currency:'MAD',maximumFractionDigits:0}).format(n||0);
