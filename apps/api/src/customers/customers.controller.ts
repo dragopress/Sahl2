@@ -10,6 +10,7 @@ import {CustomerService} from './customer.service';
 export class CustomersController{
  constructor(private readonly service:CustomerService){}
  @Get() @RequirePermission('customers:read') list(@Tenant() membership:any,@Query('page') page?:string,@Query('pageSize') pageSize?:string,@Query('search') search?:string){return this.service.list(membership.organizationId,Number(page)||1,Number(pageSize)||25,search)}
+ @Get('credit/balances') @RequirePermission('payments:read') creditBalances(@Tenant() membership:any){return this.service.creditBalances(membership.organizationId)}
  @Get(':id') @RequirePermission('customers:read') get(@Tenant() membership:any,@Param('id') id:string){return this.service.get(membership.organizationId,id)}
  @Post() @RequirePermission('customers:write') create(@Tenant() membership:any,@Body() dto:CreateCustomerDto,@Req() req:any){return this.service.create(membership.organizationId,req.auth.userId,dto,req)}
  @Patch(':id') @RequirePermission('customers:write') update(@Tenant() membership:any,@Param('id') id:string,@Body() dto:CreateCustomerDto,@Req() req:any){return this.service.update(membership.organizationId,req.auth.userId,id,dto,req)}
