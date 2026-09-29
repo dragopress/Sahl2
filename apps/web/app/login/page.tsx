@@ -1,11 +1,10 @@
 'use client';
+import {apiFetch} from '../../lib/api-client';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import ThemeSwitcher from '../theme-switcher';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -19,7 +18,7 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const r = await fetch(`${API}/auth/login`, {
+      const r = await apiFetch(`/auth/login`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
