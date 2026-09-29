@@ -1,10 +1,10 @@
 'use client';
+import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
 import {useEffect,useState} from 'react';
-const API=process.env.NEXT_PUBLIC_API_URL||'/api/v1';
 type Finance={vat:{collected:number;deductible:number;net:number};period:{from:string;to:string}};
 export default function VatPage(){
  const [data,setData]=useState<Finance|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('');
- async function load(){const org=localStorage.getItem('sahlbiz_org')||'';const r=await fetch(API+'/analytics/finance',{credentials:'include',headers:{'x-organization-id':org}});if(!r.ok){setError('Impossible de charger les données TVA.');setData(null)}else setData(await r.json());setLoading(false)}
+ async function load(){const org=getOrganizationId()||'';const r=await apiFetch(+'/analytics/finance',{credentials:'include',headers:{'x-organization-id':org}});if(!r.ok){setError('Impossible de charger les données TVA.');setData(null)}else setData(await r.json());setLoading(false)}
  useEffect(()=>{load();const onOrg=()=>load();window.addEventListener('sahlbiz-org-change',onOrg);return()=>window.removeEventListener('sahlbiz-org-change',onOrg)},[]);
  if(loading)return <div className="py-16 text-center text-gray-500">Chargement…</div>;
  if(error)return <div className="rounded-xl border bg-red-50 p-5 text-sm text-red-700">{error}</div>;
