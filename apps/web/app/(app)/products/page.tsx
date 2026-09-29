@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId} from '../../../lib/api-client';
 import {FormEvent,useEffect,useState} from 'react'; import {Package,Plus,Archive,Search} from 'lucide-react';
 type Org={id:string;name:string;role:string}; type Product={id:string;name:string;sku?:string;type:string;sellingPrice:string;purchasePrice:string;taxRate:string;unit:string;stock:string;minimumStock:string;active:boolean;category?:{name:string}};
 export default function Products(){const [orgs,setOrgs]=useState<Org[]>([]),[org,setOrg]=useState(''),[rows,setRows]=useState<Product[]>([]),[categories,setCategories]=useState<any[]>([]),[name,setName]=useState(''),[sku,setSku]=useState(''),[type,setType]=useState('PRODUCT'),[categoryId,setCategoryId]=useState(''),[sellingPrice,setSellingPrice]=useState(''),[purchasePrice,setPurchasePrice]=useState(''),[taxRate,setTaxRate]=useState('20'),[unit,setUnit]=useState('unité'),[stock,setStock]=useState('0'),[minimumStock,setMinimumStock]=useState('0'),[search,setSearch]=useState(''),[error,setError]=useState(''),[loading,setLoading]=useState(true);
