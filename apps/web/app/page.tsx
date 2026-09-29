@@ -77,7 +77,7 @@ export default function LandingPage() {
     },
     {
       q: "Comment fonctionne la validation de l'ICE (Identifiant Commun de l'Entreprise) ?",
-      a: "Chaque ICE saisi est vérifié instantanément par notre algorithme de validation selon les règles de la DGI (15 chiffres, clé de contrôle et statut fiscal). Cela vous protège contre tout risque de rejet de déductibilité de charges lors de vos déclarations fiscales.",
+      a: "Chaque ICE saisi peut être contrôlé par les règles de validation intégrées. La validation applicative ne remplace pas une vérification auprès des sources fiscales officielles.",
     },
     {
       q: "Qu'est-ce que le module 'Kreddy' et comment s'effectue la relance WhatsApp ?",
@@ -89,11 +89,11 @@ export default function LandingPage() {
     },
     {
       q: "Comment fonctionne l'alerte sur le plafond de 5 000 MAD en espèces (Art. 193 CGI) ?",
-      a: "Dès qu'une transaction au comptant ou en caisse POS atteint ou dépasse 5 000 MAD TTC, SahlBiz affiche une alerte de conformité fiscale invitant à fractionner ou à privilégier un mode de règlement bancaire (Virement, Chèque, Carte CMI) afin de préserver la déductibilité fiscale.",
+      a: "SahlBiz peut signaler les transactions en espèces selon les seuils configurés. Les règles fiscales applicables doivent être confirmées avec votre conseil ou les sources officielles.",
     },
     {
       q: "Mes données sont-elles sécurisées et protégées selon la loi 09-08 de la CNDP ?",
-      a: "Oui. Toutes vos données sont hébergées sur des infrastructures sécurisées avec chiffrement de bout en bout et sauvegardes automatiques quotidiennes. SahlBiz applique scrupuleusement les exigences de la Commission Nationale de contrôle de la protection des Données à caractère Personnel (CNDP - Loi n° 09-08).",
+      a: "SahlBiz prévoit des contrôles de sécurité, de tenant et de sauvegarde. Les obligations réglementaires et les mesures d’hébergement doivent être validées pour votre déploiement.",
     },
     {
       q: "Peut-on utiliser SahlBiz sur tablette ou smartphone au point de vente ?",
@@ -1225,7 +1225,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Check size={15} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                  <span>Export SIMPL-TVA & Télédéclarations</span>
+                  <span>Export fiscal & Télédéclarations</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check size={15} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
