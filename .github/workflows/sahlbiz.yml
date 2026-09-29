@@ -100,7 +100,7 @@ jobs:
         run: npm run build -w @sahlbiz/web
       - name: Start API
         run: |
-          npm run start -w @sahlbiz/api > /tmp/sahlbiz-api.log 2>&1 &
+          node apps/api/dist/main.js > /tmp/sahlbiz-api.log 2>&1 &
           echo $! > /tmp/sahlbiz-api.pid
           for i in {1..60}; do
             if curl -fsS http://127.0.0.1:3001/api/v1/health/live; then exit 0; fi
