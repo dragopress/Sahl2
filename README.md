@@ -1117,7 +1117,7 @@ This repository documentation is reconciled against the current `main` implement
 
 ### Release blockers found in the repository
 1. Production object storage configuration is standardized on the `S3_*` contract used by the storage package, Compose, environment templates and backup/restore scripts.
-2. The web application still contains an in-memory/demo API route and hardcoded business data. Production must never silently use that route or present demo financial values as live data.
+2. The production in-memory/demo API route has been removed; production business data now flows through the authenticated NestJS API.
 3. The dashboard and several Finance/VAT/POS/Purchasing/Opportunities surfaces still contain hardcoded/prototype behavior and must be connected to the real tenant-scoped API.
 4. The web build configuration currently permits TypeScript/ESLint build errors; the release gate must not suppress these errors.
 5. AI frontend organization/API URL handling is inconsistent with the rest of the web application and must use one canonical API/organization context.
