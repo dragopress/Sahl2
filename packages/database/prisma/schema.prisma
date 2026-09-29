@@ -165,7 +165,8 @@ model Organization {
   products            Product[]
   warehouses          Warehouse[]
   stockMovements      StockMovement[]
-  suppliers           Supplier[]
+  suppliers            Supplier[]
+  opportunities        Opportunity[]
   supplierBills       SupplierBill[]
   supplierPayments    SupplierPayment[]
   bankStatementLines  BankStatementLine[]
@@ -303,6 +304,7 @@ model Customer {
   quotes   Quote[]
   invoices Invoice[]
   projects Project[]
+  opportunities Opportunity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -940,4 +942,25 @@ model AiInsight {
   @@index([organizationId, createdAt])
   @@index([organizationId, dismissedAt])
   @@index([organizationId, type, createdAt])
+}
+
+model Opportunity {
+  id             String    @id @default(cuid())
+  organizationId String
+  customerId     String?
+  title          String
+  stage          String    @default("LEAD")
+  value          Decimal   @default(0) @db.Decimal(14, 2)
+  probability   Int       @default(0)
+  expectedClose DateTime?
+  notes          String?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  customer     Customer?    @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId, stage, expectedClose])
+  @@index([organizationId, customerId])
 }
