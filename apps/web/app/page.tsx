@@ -72,8 +72,8 @@ export default function LandingPage() {
 
   const faqItems = [
     {
-      q: "SahlBiz est-il 100% conforme aux exigences de la DGI et du Code Général des Impôts (CGI) ?",
-      a: "Absolument. SahlBiz intègre nativement toutes les exigences réglementaires marocaines : validation systématique de l'ICE à 15 chiffres, mentions légales obligatoires (IF, RC, Patente, CNSS, Capital Social), ventilation selon les taux de TVA marocains (0%, 7%, 10%, 14%, 20%), alerte de plafonnement des espèces à 5 000 MAD (Art. 193 CGI) et journal d'audit immuable SHA-256.",
+      q: "SahlBiz est-il conçu pour la gestion fiscale marocaine ?",
+      a: "SahlBiz intègre des fonctionnalités de gestion adaptées au contexte marocain, notamment la gestion de l’ICE, les taux de TVA configurables et des contrôles métier. Les obligations fiscales et déclaratives doivent être vérifiées avant utilisation pour une déclaration officielle.",
     },
     {
       q: "Comment fonctionne la validation de l'ICE (Identifiant Commun de l'Entreprise) ?",
@@ -85,7 +85,7 @@ export default function LandingPage() {
     },
     {
       q: "Mon expert-comptable ou fiduciaire peut-il exploiter directement les données ?",
-      a: "Oui. Toutes vos ventes, achats et opérations de caisse sont imputés automatiquement selon le Plan Comptable Général Marocain (PCGM - Classes 1 à 7). Vous pouvez exporter en un clic le Grand Livre, la Balance, le Bilan Actif/Passif, le CPC et le fichier de télédéclaration SIMPL-TVA.",
+      a: "Oui. Toutes vos ventes, achats et opérations de caisse sont imputés automatiquement selon le Plan Comptable Général Marocain (PCGM - Classes 1 à 7). Les états comptables disponibles peuvent être exploités selon les fonctionnalités effectivement activées ; les exports et téléprocédures fiscales officielles restent soumis à validation.",
     },
     {
       q: "Comment fonctionne l'alerte sur le plafond de 5 000 MAD en espèces (Art. 193 CGI) ?",
@@ -115,14 +115,14 @@ export default function LandingPage() {
             {/* Top Pill */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100/80 dark:bg-emerald-950/80 border border-emerald-300/80 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold shadow-xs">
               <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Conforme DGI • Code Général des Impôts & PCGM Maroc</span>
+              <span>Fonctionnalités fiscales marocaines intégrées • à valider selon votre situation</span>
               <span className="hidden sm:inline text-emerald-400">•</span>
               <span className="hidden sm:inline font-medium">Loi de Finances 2026</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
-              Le Système d&apos;Exploitation Intégré des{' '}
+              La plateforme de gestion intégrée des{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-500">
                 TPME & Commerces
               </span>{' '}
@@ -444,7 +444,7 @@ export default function LandingPage() {
                           </div>
                         </div>
                         <span className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-300 text-[11px] font-mono font-bold">
-                          Export SIMPL-TVA Prêt
+                          Export fiscal — disponibilité à valider
                         </span>
                       </div>
 
