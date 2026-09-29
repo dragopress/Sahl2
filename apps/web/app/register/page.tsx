@@ -1,11 +1,10 @@
 'use client';
+import {apiFetch} from '../../lib/api-client';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck, CheckCircle2, Building2 } from 'lucide-react';
 import ThemeSwitcher from '../theme-switcher';
-
-const API = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -21,7 +20,7 @@ export default function Register() {
     setError('');
     setLoading(true);
     try {
-      const r = await fetch(`${API}/auth/register`, {
+      const r = await apiFetch(`/auth/register`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'content-type': 'application/json' },
