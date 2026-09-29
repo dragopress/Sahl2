@@ -30,20 +30,21 @@ This is CI evidence only; it does not replace staging, Docker, backup/restore, s
 ## Release blockers from 2026-09-24 audit
 
 - [x] Normalize storage configuration on the canonical `S3_*` contract across the storage package, production Compose, environment templates and backup/restore scripts.
-- [ ] Remove or hard-disable the in-memory/demo Next.js API from production.
+- [x] Remove or hard-disable the in-memory/demo Next.js API from production.
 - [ ] Replace hardcoded dashboard, Finance/VAT and other prototype business data with real authenticated API flows.
 - [ ] Remove Next.js build-error suppression.
-- [ ] Normalize frontend API URL and organization-context handling.
+- [x] Normalize frontend API URL and organization-context handling.
 - [ ] Reconcile DGI/SIMPL-TVA/other compliance claims with implemented and validated functionality.
 - [ ] Reconcile all migration references/counts with the actual migration tree.
 - [ ] Regenerate `release/manifest.json` for the final release commit.
 
 ## Current Prisma migration tree
 
-The repository currently contains **2** migration directories:
+The repository currently contains **3** migration directories:
 
 1. `00000000000000_init`
 2. `20260921190000_atomic_number_sequences`
+3. `20260929173000_opportunities`
 
 Any older documentation claiming a different migration count/name is stale and must not be used as deployment evidence.
 
