@@ -3,7 +3,7 @@ import { ThemeProvider } from './theme-provider';
 
 export const metadata = {
   title: 'SahlBiz · Le Business OS des PME Marocaines',
-  description: 'Facturation conforme ICE/DGI, suivi de trésorerie en MAD, gestion commerciale, stocks, projets et IA pour entreprises au Maroc.',
+  description: 'Facturation avec gestion de l’ICE et des règles fiscales configurables, suivi de trésorerie en MAD, gestion commerciale, stocks, projets et IA pour entreprises au Maroc.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
