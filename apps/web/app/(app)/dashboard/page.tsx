@@ -1,7 +1,56 @@
 'use client';
-import {ArrowDownRight,ArrowUpRight,CalendarDays,MoreHorizontal,Plus,AlertCircle,CheckCircle2,Clock3} from 'lucide-react';
-import {LineChart,Line,XAxis,YAxis,Tooltip,ResponsiveContainer,CartesianGrid,BarChart,Bar} from 'recharts';
-const revenue=[{m:'Jan',v:62000},{m:'Fév',v:78000},{m:'Mar',v:69000},{m:'Avr',v:91000},{m:'Mai',v:98000},{m:'Juin',v:124850}];
-const pipeline=[{name:'Nouveaux',value:43},{name:'Qualifiés',value:27},{name:'Proposition',value:18},{name:'Gagnés',value:12}];
-const kpis=[['CA','124 850 MAD','+12,4%','up'],['Factures impayées','31 420 MAD','-8,2%','down'],['Dépenses','46 280 MAD','+4,1%','up'],['Trésorerie','183 420 MAD','Stable','neutral']];
-export default function Dashboard(){return <div className="space-y-6"><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><p className="text-sm text-gray-500">Dimanche 16 août 2026</p><h1 className="text-2xl md:text-3xl font-bold mt-1">Bonjour 👋</h1><p className="text-gray-500 mt-1">Voici ce qui se passe dans votre entreprise.</p></div><div className="flex gap-2"><button className="px-3 py-2 border border-gray-200 bg-white rounded-lg text-sm flex items-center gap-2"><CalendarDays size={16}/>Cette semaine</button><button className="px-3 py-2 bg-[var(--primary)] text-white rounded-lg text-sm flex items-center gap-2"><Plus size={16}/>Créer</button></div></div><div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">{kpis.map(([label,value,trend,dir])=><div key={label} className="bg-white border border-[var(--border)] rounded-xl p-5"><div className="flex justify-between"><span className="text-sm text-gray-500">{label}</span><MoreHorizontal size={18} className="text-gray-400"/></div><div className="text-2xl font-bold mt-3">{value}</div><div className="mt-2 text-xs flex items-center gap-1 text-gray-500">{dir==='up'?<ArrowUpRight size={14}/>:dir==='down'?<ArrowDownRight size={14}/>:null}<span>{trend} vs période précédente</span></div></div>)}</div><div className="grid grid-cols-1 xl:grid-cols-3 gap-4"><section className="xl:col-span-2 bg-white border border-[var(--border)] rounded-xl p-5"><div className="flex items-center justify-between mb-5"><div><h2 className="font-semibold">Chiffre d'affaires</h2><p className="text-sm text-gray-500">Évolution des revenus</p></div><button className="text-sm text-gray-500">6 derniers mois</button></div><div className="h-72"><ResponsiveContainer width="100%" height="100%"><LineChart data={revenue}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="m" axisLine={false} tickLine={false}/><YAxis axisLine={false} tickLine={false}/><Tooltip/><Line type="monotone" dataKey="v" stroke="var(--primary)" strokeWidth={3} dot={false}/></LineChart></ResponsiveContainer></div></section><section className="bg-white border border-[var(--border)] rounded-xl p-5"><h2 className="font-semibold">Pipeline commercial</h2><p className="text-sm text-gray-500 mb-5">Opportunités par étape</p><div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={pipeline} layout="vertical"><XAxis type="number" hide/><YAxis type="category" dataKey="name" width={85} axisLine={false} tickLine={false}/><Tooltip/><Bar dataKey="value" fill="var(--primary)" radius={[0,5,5,0]}/></BarChart></ResponsiveContainer></div></section></div><div className="grid grid-cols-1 xl:grid-cols-3 gap-4"><section className="xl:col-span-2 bg-white border border-[var(--border)] rounded-xl p-5"><div className="flex justify-between items-center mb-4"><div><h2 className="font-semibold">À traiter aujourd’hui</h2><p className="text-sm text-gray-500">Les éléments qui nécessitent votre attention</p></div><button className="text-sm text-[var(--primary)]">Voir tout</button></div><div className="space-y-2">{[['Facture INV-2026-102','8 500 MAD · 14 jours de retard','danger'],['Devis Q-2026-088','En attente de validation · Atlas Services','warning'],['Tâche · Relancer client','Mohamed B. · échéance aujourd’hui','neutral'],['Projet Riad Office','Budget à 82% · échéance dans 4 jours','success']].map(([title,meta,type])=><div key={title} className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50"><div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">{type==='danger'?<AlertCircle size={17}/>:type==='success'?<CheckCircle2 size={17}/>:<Clock3 size={17}/>}</div><div className="flex-1"><div className="text-sm font-medium">{title}</div><div className="text-xs text-gray-500 mt-0.5">{meta}</div></div><button className="text-xs px-2.5 py-1.5 border border-gray-200 rounded-md">Ouvrir</button></div>)}</div></section><section className="bg-white border border-[var(--border)] rounded-xl p-5"><h2 className="font-semibold">Insight</h2><p className="text-sm text-gray-500 mb-4">Analyse automatique</p><div className="rounded-lg border border-[var(--border)] p-4"><div className="text-sm font-medium">Les impayés reculent de 8,2%</div><p className="text-sm text-gray-600 mt-2">Vos encaissements progressent plus vite que les nouvelles créances sur la période.</p><button className="mt-3 text-sm text-[var(--primary)]">Voir les données →</button></div></section></div></div>}
+
+import {useEffect,useState} from 'react';
+import {ArrowDownRight,ArrowUpRight,MoreHorizontal,RefreshCw,AlertCircle,CheckCircle2,Clock3} from 'lucide-react';
+import {BarChart,Bar,XAxis,YAxis,Tooltip,ResponsiveContainer,CartesianGrid} from 'recharts';
+
+const API=process.env.NEXT_PUBLIC_API_URL||'/api/v1';
+type Executive={kpis:{revenue:number;receivables:number;expenses:number;payments:number;profit:number;stockValue:number}};
+type Sales={topCustomers:{name:string;value:number}[];quoteCount:number;acceptedQuotes:number};
+type Operations={supplierCount:number;openTasks:number;lowStock:{name:string;stock:number;minimum:number}[]};
+
+const money=(n:number)=>new Intl.NumberFormat('fr-MA',{style:'currency',currency:'MAD',maximumFractionDigits:2}).format(Number(n)||0);
+
+export default function Dashboard(){
+ const [data,setData]=useState<{executive:Executive|null;sales:Sales|null;operations:Operations|null}>({executive:null,sales:null,operations:null});
+ const [loading,setLoading]=useState(true);
+ const [error,setError]=useState('');
+ async function load(){
+  setLoading(true);setError('');
+  const org=localStorage.getItem('sahlbiz_org')||'';
+  const headers={'x-organization-id':org};
+  try{
+   const [a,b,c]=await Promise.all([
+    fetch(`${API}/analytics/executive`,{credentials:'include',headers}),
+    fetch(`${API}/analytics/sales`,{credentials:'include',headers}),
+    fetch(`${API}/analytics/operations`,{credentials:'include',headers}),
+   ]);
+   if([a,b,c].some(r=>r.status===401||r.status===403)) throw new Error('Votre session ou votre organisation n’est plus autorisée.');
+   if(!a.ok||!b.ok||!c.ok) throw new Error('Impossible de charger les données du tableau de bord.');
+   setData({executive:await a.json(),sales:await b.json(),operations:await c.json()});
+  }catch(e){setError(e instanceof Error?e.message:'Impossible de charger les données.')}finally{setLoading(false)}
+ }
+ useEffect(()=>{load();const onOrg=()=>load();window.addEventListener('sahlbiz-org-change',onOrg);return()=>window.removeEventListener('sahlbiz-org-change',onOrg)},[]);
+
+ if(loading)return <div className="py-16 text-center text-gray-500">Chargement du tableau de bord…</div>;
+ if(error)return <div className="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-700"><div>{error}</div><button onClick={load} className="mt-3 inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border"><RefreshCw size={14}/>Réessayer</button></div>;
+
+ const k=data.executive?.kpis;
+ const sales=data.sales;
+ const ops=data.operations;
+ const cards=[
+  ['CA',money(k?.revenue||0),'current'],
+  ['Créances',money(k?.receivables||0),'unpaid'],
+  ['Dépenses',money(k?.expenses||0),'expense'],
+  ['Trésorerie',money(k?.payments||0),'cash'],
+ ];
+ return <div className="space-y-6">
+  <div><p className="text-sm text-gray-500">Données de votre organisation</p><h1 className="text-2xl md:text-3xl font-bold mt-1">Tableau de bord</h1><p className="text-gray-500 mt-1">Indicateurs calculés à partir des données authentifiées de l’organisation active.</p></div>
+  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">{cards.map(([label,value,type])=><div key={label} className="bg-white border border-[var(--border)] rounded-xl p-5"><div className="flex justify-between"><span className="text-sm text-gray-500">{label}</span><MoreHorizontal size={18} className="text-gray-400"/></div><div className="text-2xl font-bold mt-3">{value}</div><div className="mt-2 text-xs text-gray-500">{type==='unpaid'?'Factures non réglées':type==='expense'?'Charges comptabilisées':type==='cash'?'Paiements encaissés':'Période courante'}</div></div>)}</div>
+  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+   <section className="xl:col-span-2 bg-white border border-[var(--border)] rounded-xl p-5"><div className="mb-5"><h2 className="font-semibold">Ventes par client</h2><p className="text-sm text-gray-500">Données issues des factures de l’organisation.</p></div><div className="h-72">{sales?.topCustomers?.length?<ResponsiveContainer width="100%" height="100%"><BarChart data={sales.topCustomers.slice(0,8)}><CartesianGrid strokeDasharray="3 3" vertical={false}/><XAxis dataKey="name" hide/><YAxis/><Tooltip formatter={(v:number)=>money(v)}/><Bar dataKey="value" name="CA" fill="var(--primary)"/></BarChart></ResponsiveContainer>:<div className="h-full flex items-center justify-center text-sm text-gray-500">Aucune vente disponible.</div>}</div></section>
+   <section className="bg-white border border-[var(--border)] rounded-xl p-5"><h2 className="font-semibold">Activité</h2><div className="mt-5 space-y-4 text-sm"><div className="flex justify-between"><span>Devis</span><b>{sales?.quoteCount||0}</b></div><div className="flex justify-between"><span>Devis acceptés</span><b>{sales?.acceptedQuotes||0}</b></div><div className="flex justify-between"><span>Fournisseurs actifs</span><b>{ops?.supplierCount||0}</b></div><div className="flex justify-between"><span>Tâches ouvertes</span><b>{ops?.openTasks||0}</b></div><div className="flex justify-between"><span>Stocks faibles</span><b>{ops?.lowStock?.length||0}</b></div></div></section>
+  </div>
+  <section className="bg-white border border-[var(--border)] rounded-xl p-5"><div className="flex justify-between items-center mb-4"><div><h2 className="font-semibold">Alertes stock</h2><p className="text-sm text-gray-500">Articles sous leur seuil minimum.</p></div></div>{ops?.lowStock?.length?<div className="space-y-2">{ops.lowStock.slice(0,8).map(x=><div key={x.name} className="flex items-center gap-3 p-3 rounded-lg border"><AlertCircle size={17}/><div className="flex-1"><div className="text-sm font-medium">{x.name}</div><div className="text-xs text-gray-500 mt-0.5">{x.stock} en stock · minimum {x.minimum}</div></div><span className="text-xs px-2 py-1 rounded bg-gray-100">Réapprovisionnement</span></div>)}</div>:<div className="flex items-center gap-2 text-sm text-gray-500"><CheckCircle2 size={17}/>Aucune alerte de stock.</div>}</section>
+ </div>;
+}
