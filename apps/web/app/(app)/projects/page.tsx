@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId} from '../../../lib/api-client';
 import {useEffect,useMemo,useState} from 'react';
 import {BarChart3,Plus,RefreshCw} from 'lucide-react';
 const money=(n:number)=>new Intl.NumberFormat('fr-MA',{style:'currency',currency:'MAD',maximumFractionDigits:2}).format(n||0);
