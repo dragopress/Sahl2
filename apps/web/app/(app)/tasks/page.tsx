@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId} from '../../../lib/api-client';
 import {useEffect,useState} from 'react';
 export default function TasksPage(){const [tasks,setTasks]=useState<any[]>([]);const [title,setTitle]=useState('');const [status,setStatus]=useState('TODO');const [error,setError]=useState('');
  async function load(){const org=getOrganizationId();const r=await apiFetch(`/tasks`,{credentials:'include',headers:{'x-organization-id':org||''}});if(r.ok)setTasks(await r.json());else setError('Impossible de charger les tâches.')}
