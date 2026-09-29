@@ -1,5 +1,5 @@
 'use client';
-import {apiFetch,getOrganizationId} from '../../../lib/api-client';
+import {apiFetch,getOrganizationId,setOrganizationId} from '../../../lib/api-client';
 import {FormEvent,useEffect,useState} from 'react';
 import {FileText,Upload,Download,Trash2,Search,Clock3,RefreshCw} from 'lucide-react';
 type Doc={id:string;name:string;category:string;mimeType:string;sizeBytes:number;currentVersion:number;expiresAt?:string;tags?:{id:string;name:string}[];createdAt:string};
