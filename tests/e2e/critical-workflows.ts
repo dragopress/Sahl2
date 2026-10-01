@@ -128,6 +128,7 @@ test('critical business workflows and tenant isolation', async () => {
   assert.equal(invoice.projectId, projectId);
   assert.equal(invoice.customerId, customerId);
   await post(`/invoices/${invoice.id}/send`, {}, a.cookie);
+  await get(`/invoices/${invoice.id}`, b.cookie, 404);
 
   const stock = await get(`/inventory/stock?warehouseId=${encodeURIComponent(warehouseId)}`, a.cookie);
   const productStock = stock.find((row: any) => row.productId === productId);
@@ -137,6 +138,8 @@ test('critical business workflows and tenant isolation', async () => {
   const cash = await post('/finance/cash-accounts', {name: `E2E Bank ${suffix}`, type: 'BANK', openingBalance: 0}, a.cookie);
   const payment = await post('/payments', {invoiceId: invoice.id, amount: 240, method: 'BANK', reference: `E2E-${suffix}`}, a.cookie);
   assert.ok(payment.id);
+  await post('/payments', {invoiceId: invoice.id, amount: 1, method: 'BANK', reference: `CROSS-TENANT-${suffix}`}, b.cookie, 404);
+  await post(`/finance/post/invoice/${invoice.id}`, {}, b.cookie, 404);
   await post(`/finance/post/invoice/${invoice.id}`, {}, a.cookie);
   await post(`/finance/post/payment/${payment.id}?cashAccountId=${encodeURIComponent(cash.id)}`, {}, a.cookie);
 
@@ -148,6 +151,9 @@ test('critical business workflows and tenant isolation', async () => {
   const supplier = await post('/suppliers', {name: `E2E Supplier ${suffix}`, paymentTermsDays: 30}, a.cookie);
   const supplierBill = await post('/suppliers/bills', {supplierId: supplier.id, subtotal: 50, tax: 10, externalNumber: `EXT-${suffix}`}, a.cookie);
   await post(`/suppliers/bills/${supplierBill.id}/post`, {}, a.cookie);
+  const bSupplierBills = await get('/suppliers/bills', b.cookie);
+  assert.equal(bSupplierBills.length, 0, 'tenant B must not see tenant A supplier bills');
+  await post(`/suppliers/bills/${supplierBill.id}/post`, {}, b.cookie, 404);
   const supplierPayment = await post('/suppliers/payments', {
     supplierBillId: supplierBill.id,
     cashAccountId: cash.id,
@@ -156,6 +162,7 @@ test('critical business workflows and tenant isolation', async () => {
     method: 'BANK',
   }, a.cookie);
   assert.ok(supplierPayment.payment.id);
+  await post('/suppliers/payments', {supplierBillId: supplierBill.id, cashAccountId: cash.id, amount: 1, paidAt: new Date().toISOString(), method: 'BANK'}, b.cookie, 404);
 
   const expense = await post('/expenses', {
     category: 'E2E Test',
@@ -165,6 +172,7 @@ test('critical business workflows and tenant isolation', async () => {
     projectId,
     paymentMethod: 'BANK',
   }, a.cookie);
+  await post(`/expenses/${expense.id}/approve`, {}, b.cookie, 404);
   await post(`/expenses/${expense.id}/approve`, {}, a.cookie);
   const paidExpense = await post(`/expenses/${expense.id}/pay`, {cashAccountId: cash.id, paidAt: new Date().toISOString()}, a.cookie);
   assert.equal(paidExpense.status, 'PAID');
@@ -173,6 +181,7 @@ test('critical business workflows and tenant isolation', async () => {
   assert.equal(opportunity.customerId, customerId);
   const opportunities = await get('/opportunities', a.cookie);
   assert.ok(opportunities.some((x: any) => x.id === opportunity.id));
+  await patch(`/opportunities/${opportunity.id}`, {title: `Cross-tenant mutation ${suffix}`}, b.cookie, 404);
   const bOpportunities = await get('/opportunities', b.cookie);
   assert.equal(bOpportunities.some((x: any) => x.id === opportunity.id), false, 'tenant B must not see tenant A opportunities');
 
@@ -207,6 +216,7 @@ test('critical business workflows and tenant isolation', async () => {
   const notifications = await get('/automation/notifications', a.cookie);
   assert.ok(Array.isArray(notifications));
 
+  await post(`/invoices/${invoice.id}/cancel`, {}, b.cookie, 404);
   const bProject = await get(`/projects/${projectId}`, b.cookie, 404);
   assert.equal(bProject.message, 'Projet introuvable.');
 
