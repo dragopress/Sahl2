@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 const root = process.cwd();
 const required = [
@@ -18,6 +19,15 @@ const required = [
   'scripts/validate-repo.mjs',
 ];
 const failures = [];
+const manifestFiles = [
+  'package.json',
+  'docker-compose.production.yml',
+  '.env.production.example',
+  'infra/api/Dockerfile',
+  'infra/api/entrypoint.sh',
+  'infra/web/Dockerfile',
+  'infra/worker/Dockerfile',
+];
 const exists = (p) => fs.existsSync(path.join(root, p));
 for (const file of required) if (!exists(file)) failures.push(`missing: ${file}`);
 
@@ -48,6 +58,23 @@ for (const secret of ['POSTGRES_PASSWORD','REDIS_PASSWORD','SESSION_SECRET','MIN
   }
 }
 if (/BEGIN (RSA|OPENSSH) PRIVATE KEY/.test(env)) failures.push('private key material found in production env template');
+
+const manifestPath = path.join(root, 'release/manifest.json');
+if (!fs.existsSync(manifestPath)) {
+  failures.push('release/manifest.json is missing; run npm run release:manifest');
+} else {
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    if (manifest.version !== version) failures.push(`release manifest version ${manifest.version} != package ${version}`);
+    for (const file of manifestFiles) {
+      const expected = manifest.files?.[file];
+      const actual = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
+      if (expected !== actual) failures.push(`release manifest hash mismatch: ${file}`);
+    }
+  } catch (error) {
+    failures.push(`release/manifest.json is invalid: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
 
 const entrypoint = fs.readFileSync(path.join(root, 'infra/api/entrypoint.sh'), 'utf8');
 if (!entrypoint.includes('exit 0')) failures.push('migration entrypoint must exit after one-shot migrations');
