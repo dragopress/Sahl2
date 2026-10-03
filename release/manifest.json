@@ -3,7 +3,7 @@
   "version": "0.2.0-rc.1",
   "generatedAt": "2026-10-03T00:00:00.000Z",
   "files": {
-    "package.json": "cf00d97a1cde56b072ac025210fc6c7ecc7177a1f5d930866158a650d6915797",
+    "package.json": "68271792a9f71f6f06e9d17f903cc2fee7556505091e4b1ee9e323f4e1caca1b",
     "docker-compose.production.yml": "f29029ce99984fb554a3c418f0cdad6c1dda12113fa5f3fa1f0f0d3588529d7e",
     ".env.production.example": "5b2b69e303d592fa5e1d24a6713d96d4ea499bade01b79e9f10b8d8632197b04",
     "infra/api/Dockerfile": "bffdebe11b0f27d31c25eeaa493e4ba1a5ab8db2da1156f3e4453d0328624349",
