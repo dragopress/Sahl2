@@ -18,7 +18,7 @@
     "db:generate": "npm run prisma:generate -w @sahlbiz/database",
     "db:migrate": "npm run prisma:migrate -w @sahlbiz/database",
     "db:seed": "npm run prisma:seed -w @sahlbiz/database",
-    "db:migrate:deploy": "npm run db:migrate:deploy -w @sahlbiz/database",
+    "db:migrate:deploy": "npm run prisma:migrate:deploy -w @sahlbiz/database",
     "db:migrate:fresh": "npm run prisma:migrate:fresh -w @sahlbiz/database",
     "test": "npm run test -w @sahlbiz/api",
     "typecheck": "npm run typecheck -w @sahlbiz/storage && npm run typecheck -w @sahlbiz/api && npm run typecheck -w @sahlbiz/web && npm run typecheck -w @sahlbiz/worker",
