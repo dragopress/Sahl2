@@ -73,6 +73,8 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Validate repository
         run: npm run validate
+      - name: Release candidate repository check
+        run: npm run release:check
       - name: Generate Prisma client
         run: npm run db:generate
       - name: Verify Prisma migration history
