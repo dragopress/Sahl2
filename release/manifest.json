@@ -1,14 +1,14 @@
 {
   "product": "SahlBiz Business OS",
   "version": "0.2.0-rc.1",
-  "generatedAt": "2026-10-03T00:00:00.000Z",
+  "generatedAt": "2026-10-03T18:00:37.958Z",
   "files": {
-    "package.json": "68271792a9f71f6f06e9d17f903cc2fee7556505091e4b1ee9e323f4e1caca1b",
-    "docker-compose.production.yml": "f29029ce99984fb554a3c418f0cdad6c1dda12113fa5f3fa1f0f0d3588529d7e",
-    ".env.production.example": "5b2b69e303d592fa5e1d24a6713d96d4ea499bade01b79e9f10b8d8632197b04",
-    "infra/api/Dockerfile": "bffdebe11b0f27d31c25eeaa493e4ba1a5ab8db2da1156f3e4453d0328624349",
-    "infra/api/entrypoint.sh": "2209d731aedf98f2c28bf7195d0b86314d35ed03b03a4f68280bf343a540aad9",
-    "infra/web/Dockerfile": "6cb955339aedb042353487acc83336825e0a1366e8b8a020d5f424c0f939ac0c",
-    "infra/worker/Dockerfile": "7849c1ab10e34d3825d1788f4a995b00abae9ce1a1552aeb9e3fabeecf37095c"
+    "package.json": "da7ce691c119ad4b6ebab75c122c52b51e7b5efa360d5e1fbaf215cb56dbc2f9",
+    "docker-compose.production.yml": "fb0e0afbdb41178b4fa4f15ed4c3193ced189564822109321b639ee345d61023",
+    ".env.production.example": "aa66924e31fd27fb8c929ba07af539676f9218dc9fc3c802dd1d7af13a0a22d2",
+    "infra/api/Dockerfile": "ff8b98ffad78b9ff20a475be5892cb2f52fd728d04f5592cea71132cb0750427",
+    "infra/api/entrypoint.sh": "407d4ddf793d2082fba9dc97e0dd214f9f2d3822a7b4614894603b684c2af1c8",
+    "infra/web/Dockerfile": "3afcc0edd1937864b2fe8647ae75da212eb28087587c65c95c74a0dc91d14a9c",
+    "infra/worker/Dockerfile": "069e2db705a4cc8f8f73cc8ef66afc1841ddc52f7a310541d89203d1d759ed9d"
   }
 }
