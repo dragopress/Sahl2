@@ -134,7 +134,10 @@ test('critical business workflows and tenant isolation', async () => {
   const productStock = stock.find((row: any) => row.productId === productId);
   assert.equal(Number(productStock.quantity), 3, 'sending a product invoice must issue stock');
 
-  await post('/finance/accounts/seed', {}, a.cookie);
+  const seededAccounts = await post('/finance/accounts/seed', {}, a.cookie);
+  const crossTenantParentId = seededAccounts.find((account: any) => account.code === '411000')?.id;
+  assert.ok(crossTenantParentId, 'seeded chart must expose the client account');
+  await post('/finance/accounts', {code: `E2E-${Date.now()}`, name: 'Cross-tenant child account', type: 'ASSET', parentId: crossTenantParentId}, b.cookie, 400);
   const cash = await post('/finance/cash-accounts', {name: `E2E Bank ${suffix}`, type: 'BANK', openingBalance: 0}, a.cookie);
   const payment = await post('/payments', {invoiceId: invoice.id, amount: 240, method: 'BANK', reference: `E2E-${suffix}`}, a.cookie);
   assert.ok(payment.id);
